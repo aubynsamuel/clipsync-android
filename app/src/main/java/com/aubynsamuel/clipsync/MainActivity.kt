@@ -1,114 +1,133 @@
 package com.aubynsamuel.clipsync
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
+import com.aubynsamuel.clipsync.ui.MainScreen
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 class MainActivity : ComponentActivity() {
-    private val bluetoothManager by lazy {
-        getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
-    }
+    private lateinit var bluetoothAdapter: BluetoothAdapter
 
-    private val bluetoothAdapter by lazy {
-        bluetoothManager.adapter
-    }
-
-    private val isBluetoothEnabled: Boolean
-        get() = bluetoothAdapter?.isEnabled == true
-
-    private val enableBluetoothLauncher = registerForActivityResult(
+    private val requestEnableBluetooth = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { /* No specific action needed here as we check status in onResume */ }
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Bluetooth enabled, proceed
+            // Devices list gets refreshed in the Compose view via loadPairedDevices lambda.
+            loadPairedDevices() // Can be used to trigger other side–effects if needed.
+        } else {
+            // Handle Bluetooth not enabled case.
+        }
+    }
 
-    private val permissionLauncher = registerForActivityResult(
+    private val requestPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { perms ->
-        val canEnableBluetooth =
-            perms[android.Manifest.permission.BLUETOOTH_CONNECT] == true
-
-        if (canEnableBluetooth && !isBluetoothEnabled) {
-            enableBluetooth()
+    ) { permissions ->
+        val allGranted = permissions.entries.all { it.value }
+        if (allGranted) {
+            checkBluetoothEnabled()
+        } else {
+            // Handle permission denial here.
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        requestBluetoothPermissions()
-        val serviceIntent = Intent(this, ClipboardService::class.java)
-        startForegroundService(serviceIntent)
 
+        val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = bluetoothManager.adapter
+
+        // Pass functions as lambdas to the composable.
         setContent {
-            ClipSyncTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    ClipSyncApp(bluetoothAdapter)
-                }
+            MaterialTheme {
+                MainScreen(
+                    startBluetoothService = { selectedDeviceAddresses ->
+                        startBluetoothService(selectedDeviceAddresses)
+                    },
+                    loadPairedDevices = { loadPairedDevices() },
+                    launchShareActivity = { context ->
+                        val shareIntent = Intent(context, TransparentActivity::class.java).apply {
+                            action = "ACTION_SHARE"
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(shareIntent)
+                    }
+                )
             }
         }
+        checkPermissions()
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (!bluetoothAdapter?.isEnabled!!) {
-            requestBluetoothPermissions()
+    private fun checkPermissions() {
+        val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_ADVERTISE,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.BLUETOOTH,
+                Manifest.permission.BLUETOOTH_ADMIN
+            )
         }
-    }
 
-    private fun requestBluetoothPermissions() {
-        val requiredPermissions = arrayOf(
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.BLUETOOTH_ADVERTISE,
-            android.Manifest.permission.POST_NOTIFICATIONS,
-            android.Manifest.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED,
-            android.Manifest.permission.SCHEDULE_EXACT_ALARM,
-            android.Manifest.permission.USE_EXACT_ALARM,
-            android.Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE,
-            android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
-        )
-        val permissionsToRequest = requiredPermissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        val missingPermissions = requiredPermissions.filter {
+            ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }.toTypedArray()
 
-        if (permissionsToRequest.isNotEmpty()) {
-            permissionLauncher.launch(permissionsToRequest)
-        } else if (!isBluetoothEnabled) {
-            enableBluetooth()
+        if (missingPermissions.isNotEmpty()) {
+            requestPermissionsLauncher.launch(missingPermissions)
+        } else {
+            checkBluetoothEnabled()
         }
     }
 
-    private fun enableBluetooth() {
-        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.BLUETOOTH_CONNECT
-            ) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            enableBluetoothLauncher.launch(enableBtIntent)
+    private fun checkBluetoothEnabled() {
+        if (!bluetoothAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            requestEnableBluetooth.launch(enableBtIntent)
         } else {
-            Toast.makeText(this, "Bluetooth permission required", Toast.LENGTH_SHORT).show()
+            loadPairedDevices()
         }
+    }
+
+    private fun loadPairedDevices(): Set<BluetoothDevice> {
+        return if (ActivityCompat.checkSelfPermission(
+                this,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    Manifest.permission.BLUETOOTH_CONNECT
+                else
+                    Manifest.permission.BLUETOOTH
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            emptySet()
+        } else {
+            bluetoothAdapter.bondedDevices ?: emptySet()
+        }
+    }
+
+    private fun startBluetoothService(selectedDeviceAddresses: Set<String>) {
+        val serviceIntent = Intent(this, BluetoothService::class.java).apply {
+            putExtra("SELECTED_DEVICES", selectedDeviceAddresses.toTypedArray())
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+        finish() // Optionally finish the activity if that's the desired flow.
     }
 }

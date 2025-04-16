@@ -1,0 +1,46 @@
+package com.aubynsamuel.clipsync
+
+import android.app.NotificationManager
+import android.content.BroadcastReceiver
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+
+class NotificationReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            "ACTION_DISMISS" -> {
+                val serviceIntent = Intent(context, BluetoothService::class.java)
+                context.stopService(serviceIntent)
+
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.cancel(1001)  // Service notification ID
+            }
+
+            "ACTION_COPY" -> {
+                val clipText = intent.getStringExtra("CLIP_TEXT") ?: return
+
+                val clipboardManager =
+                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipData = ClipData.newPlainText("Received Text", clipText)
+                clipboardManager.setPrimaryClip(clipData)
+
+                // On Android 13+, the system shows its own toast when setting clipboard
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                }
+
+                // Dismiss the notification
+                val notificationId = intent.getIntExtra("NOTIFICATION_ID", 0)
+                if (notificationId != 0) {
+                    val notificationManager =
+                        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    notificationManager.cancel(notificationId)
+                }
+            }
+        }
+    }
+}
