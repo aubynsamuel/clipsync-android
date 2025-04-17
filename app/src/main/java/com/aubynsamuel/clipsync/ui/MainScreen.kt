@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 
@@ -46,15 +47,14 @@ fun MainScreen(
         Text(
             text = "ClipSync",
             style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
         Text(
             text = "Select devices to share clipboard with:",
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -102,23 +102,21 @@ fun MainScreen(
             }
         }
 
-        // Button to start clipboard sharing service.
         Button(
             onClick = { startBluetoothService(selectedDeviceAddresses) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(top = 8.dp),
             enabled = selectedDeviceAddresses.isNotEmpty()
         ) {
             Text("Start Clipboard Sharing")
         }
 
-        // New button to share clipboard directly from the app.
         Button(
             onClick = { launchShareActivity(context) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp)
+                .padding(top = 8.dp)
         ) {
             Text("Share Clipboard")
         }

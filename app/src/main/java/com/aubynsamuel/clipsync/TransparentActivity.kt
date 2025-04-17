@@ -1,4 +1,3 @@
-// TransparentActivity.kt
 package com.aubynsamuel.clipsync
 
 import android.content.ClipboardManager
@@ -83,6 +82,8 @@ class TransparentActivity : ComponentActivity() {
 
             if (clipText.isNotEmpty()) {
                 bluetoothService?.shareClipboard(clipText)
+//                For testing
+//                shareTextFile(this, clipText)
                 Toast.makeText(this, "Clipboard shared!", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Clipboard is empty", Toast.LENGTH_SHORT).show()

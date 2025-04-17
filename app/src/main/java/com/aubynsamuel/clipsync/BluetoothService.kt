@@ -16,22 +16,23 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.IOException
 import java.util.*
 
 class BluetoothService : Service() {
-    private val TAG = "BluetoothService"
-    private val CHANNEL_ID = "ClipSyncServiceChannel"
-    private val NOTIFICATION_ID = 1001
+    private val tag = "BluetoothService"
+    private val channelId = "ClipSyncServiceChannel"
+    private val notificationId = 1001
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var selectedDeviceAddresses = arrayOf<String>()
     private var serverSocket: BluetoothServerSocket? = null
     private var receiverThread: Thread? = null
-    private val UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
+    private val uuidInsecure = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
 
     // Binder given to clients
     private val binder = LocalBinder()
@@ -47,7 +48,7 @@ class BluetoothService : Service() {
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
 
-        startForeground(NOTIFICATION_ID, createServiceNotification())
+        startForeground(notificationId, createServiceNotification())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -73,8 +74,8 @@ class BluetoothService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "ClipSync Service"
             val descriptionText = "Bluetooth clipboard sharing service"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(channelId, name, importance).apply {
                 description = descriptionText
             }
 
@@ -108,13 +109,14 @@ class BluetoothService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(this, channelId)
             .setContentTitle("ClipSync Active")
             .setContentText("Ready to share clipboard")
             .setSmallIcon(R.drawable.ic_clipboard)
             .addAction(0, "Share", sharePendingIntent)
             .addAction(0, "Dismiss", dismissPendingIntent)
             .setOngoing(true)
+            .setPriority(2)
             .build()
     }
 
@@ -124,14 +126,14 @@ class BluetoothService : Service() {
                 // Check for Bluetooth permissions
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     if (checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        Log.e(TAG, "Bluetooth connect permission not granted")
+                        Log.e(tag, "Bluetooth connect permission not granted")
                         return@launch
                     }
                 }
 
                 serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(
                     "ClipSync",
-                    UUID_INSECURE
+                    uuidInsecure
                 )
 
                 receiverThread = Thread {
@@ -140,7 +142,7 @@ class BluetoothService : Service() {
                             val socket = serverSocket?.accept()
                             socket?.let { handleIncomingConnection(it) }
                         } catch (e: IOException) {
-                            Log.e(TAG, "Server socket accept failed", e)
+                            Log.e(tag, "Server socket accept failed", e)
                             break
                         }
                     }
@@ -148,7 +150,7 @@ class BluetoothService : Service() {
                 receiverThread?.start()
 
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to start server", e)
+                Log.e(tag, "Failed to start server", e)
             }
         }
     }
@@ -163,17 +165,19 @@ class BluetoothService : Service() {
             try {
                 val json = JSONObject(message)
                 val clipText = json.getString("clip")
-                val timestamp = json.getString("timestamp")
+//                val timestamp = json.getString("timestamp")
 
                 showReceivedNotification(clipText)
             } catch (e: Exception) {
-                Log.e(TAG, "Error parsing JSON", e)
+                Log.e(tag, "Error parsing JSON", e)
             }
-
-            inputStream.close()
-            socket.close()
+            serviceScope.launch {
+                delay(3000)
+                inputStream.close()
+                socket.close()
+            }
         } catch (e: IOException) {
-            Log.e(TAG, "Error handling connection", e)
+            Log.e(tag, "Error handling connection", e)
         }
     }
 
@@ -190,7 +194,7 @@ class BluetoothService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Clipboard text received")
             .setContentText(text.take(50) + if (text.length > 50) "..." else "")
             .setSmallIcon(R.drawable.ic_clipboard)
@@ -213,16 +217,16 @@ class BluetoothService : Service() {
     }
 
     private fun sendToDevice(device: BluetoothDevice, text: String) {
-        Log.d(TAG, "Data-Sent: $text")
+        Log.d(tag, "Data-Sent: $text")
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    Log.e(TAG, "Bluetooth connect permission not granted")
+                    Log.e(tag, "Bluetooth connect permission not granted")
                     return
                 }
             }
 
-            val socket = device.createInsecureRfcommSocketToServiceRecord(UUID_INSECURE)
+            val socket = device.createInsecureRfcommSocketToServiceRecord(uuidInsecure)
             socket.connect()
 
             val outputStream = socket.outputStream
@@ -232,12 +236,15 @@ class BluetoothService : Service() {
             }
 
             outputStream.write(json.toString().toByteArray())
-            outputStream.flush()
-            outputStream.close()
-            socket.close()
+            serviceScope.launch {
+                delay(3000)
+                outputStream.flush()
+                outputStream.close()
+                socket.close()
+            }
 
         } catch (e: IOException) {
-            Log.e(TAG, "Error sending to device: ${device.address}", e)
+            Log.e(tag, "Error sending to device: ${device.address}", e)
         }
     }
 
@@ -246,7 +253,7 @@ class BluetoothService : Service() {
             serverSocket?.close()
             receiverThread?.interrupt()
         } catch (e: IOException) {
-            Log.e(TAG, "Error closing server socket", e)
+            Log.e(tag, "Error closing server socket", e)
         }
     }
 }
