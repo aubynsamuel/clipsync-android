@@ -28,7 +28,6 @@ fun createServiceNotification(context: Context): Notification {
 
     val shareIntent = Intent(context, ShareClipboardActivity::class.java).apply {
         action = "ACTION_SHARE"
-//            flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 
     val sharePendingIntent = PendingIntent.getActivity(
@@ -55,7 +54,6 @@ fun createServiceNotification(context: Context): Notification {
         .setOngoing(true)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setContentIntent(contentPendingIntent)
-//            .setSilent(true)
         .build()
 }
 
@@ -89,7 +87,6 @@ fun showReceivedNotification(text: String, context: Context) {
             .setSmallIcon(R.drawable.ic_clipboard)
             .addAction(0, "Copy", copyPendingIntent)
             .setAutoCancel(true)
-//                .setSilent(true)
             .build()
 
     NotificationManagerCompat.from(context).apply {

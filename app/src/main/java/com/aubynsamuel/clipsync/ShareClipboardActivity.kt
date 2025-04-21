@@ -53,7 +53,6 @@ class ShareClipboardActivity : ComponentActivity() {
             }
 
             else -> {
-                // If no action to handle, finish after binding
                 if (!pendingShareAction) {
                     finish()
                 }
@@ -69,7 +68,6 @@ class ShareClipboardActivity : ComponentActivity() {
         }
     }
 
-    // Added delay to allow clipboard contents to be available.
     private fun handleShareAction() {
         Handler(Looper.getMainLooper()).postDelayed({
             val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
@@ -77,18 +75,15 @@ class ShareClipboardActivity : ComponentActivity() {
                 ?.getItemAt(0)
                 ?.text
                 .toString()
-
-            if (clipText.isEmpty()) {
+            if (clipText == "null" || clipText.isBlank()) {
                 showToast("Clipboard is empty", this)
                 finish()
+                return@postDelayed
             }
 
-            // launch a coroutine on Main by default
             lifecycleScope.launch {
-                // this will suspend until shareClipboard returns
                 val result = bluetoothService?.shareClipboard(clipText)
 
-                // now we’re *sure* result has been set
                 when (result) {
                     SharingResult.SUCCESS -> showToast(
                         "Clipboard shared!",

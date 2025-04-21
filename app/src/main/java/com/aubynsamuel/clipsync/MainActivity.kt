@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,8 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import com.aubynsamuel.clipsync.ui.MainScreen
 import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
-
-private const val tag = "BluetoothService"
 
 class MainActivity : ComponentActivity() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
@@ -66,7 +63,6 @@ class MainActivity : ComponentActivity() {
                         val shareIntent =
                             Intent(context, ShareClipboardActivity::class.java).apply {
                                 action = "ACTION_SHARE"
-//                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             }
                         context.startActivity(shareIntent)
                     },
@@ -119,7 +115,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun loadPairedDevices(): Set<BluetoothDevice> {
-        Log.e(tag, "New Devices Loaded")
         if (ActivityCompat.checkSelfPermission(
                 this,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)

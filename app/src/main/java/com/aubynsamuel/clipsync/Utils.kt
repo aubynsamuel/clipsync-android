@@ -7,6 +7,8 @@ fun showToast(msg: String, context: Context) {
     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
 }
 
+const val tag = "BluetoothService"
+
 
 //fun createTempTextFile(context: Context, text: String, fileName: String = "clip.txt"): File? {
 //    return try {

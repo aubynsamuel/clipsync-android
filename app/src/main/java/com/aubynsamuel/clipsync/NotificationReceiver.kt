@@ -16,7 +16,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.cancel(1001)  // Service notification ID
+                notificationManager.cancel(1001)
             }
 
             "ACTION_COPY" -> {
