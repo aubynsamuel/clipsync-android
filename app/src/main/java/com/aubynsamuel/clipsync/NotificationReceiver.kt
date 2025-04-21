@@ -6,7 +6,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -30,7 +29,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
                 // On Android 13+, the system shows its own toast when setting clipboard
                 if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
-                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                    showToast("Copied to clipboard", context)
                 }
 
                 // Dismiss the notification

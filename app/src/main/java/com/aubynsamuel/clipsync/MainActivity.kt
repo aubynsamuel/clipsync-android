@@ -8,25 +8,31 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.MaterialTheme
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import com.aubynsamuel.clipsync.ui.MainScreen
+import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
+
+private const val tag = "BluetoothService"
 
 class MainActivity : ComponentActivity() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
+    private var pairedDevices = mutableStateOf<Set<BluetoothDevice>>(emptySet())
 
     private val requestEnableBluetooth = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            // Bluetooth enabled, proceed
-            // Devices list gets refreshed in the Compose view via loadPairedDevices lambda.
-            loadPairedDevices() // Can be used to trigger other side–effects if needed.
+            loadPairedDevices()
         } else {
-            // Handle Bluetooth not enabled case.
+            showToast("Bluetooth is required to find devices.", this)
+            checkBluetoothEnabled()
         }
     }
 
@@ -37,35 +43,44 @@ class MainActivity : ComponentActivity() {
         if (allGranted) {
             checkBluetoothEnabled()
         } else {
-            // Handle permission denial here.
+            showToast("Permissions needed to start sharing", this)
+            checkPermissions()
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        enableEdgeToEdge()
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
 
-        // Pass functions as lambdas to the composable.
         setContent {
-            MaterialTheme {
+            ClipSyncTheme {
                 MainScreen(
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)
                     },
-                    loadPairedDevices = { loadPairedDevices() },
+                    pairedDevices = pairedDevices.value,
                     launchShareActivity = { context ->
-                        val shareIntent = Intent(context, TransparentActivity::class.java).apply {
-                            action = "ACTION_SHARE"
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
+                        val shareIntent =
+                            Intent(context, ShareClipboardActivity::class.java).apply {
+                                action = "ACTION_SHARE"
+//                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
                         context.startActivity(shareIntent)
-                    }
+                    },
+                    refresh = { loadPairedDevices() },
+                    stopBluetoothService = { stopBluetoothService() },
                 )
             }
         }
         checkPermissions()
+    }
+
+    private fun stopBluetoothService() {
+        val serviceIntent = Intent(this, BluetoothService::class.java)
+        this.stopService(serviceIntent)
     }
 
     private fun checkPermissions() {
@@ -104,7 +119,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun loadPairedDevices(): Set<BluetoothDevice> {
-        return if (ActivityCompat.checkSelfPermission(
+        Log.e(tag, "New Devices Loaded")
+        if (ActivityCompat.checkSelfPermission(
                 this,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                     Manifest.permission.BLUETOOTH_CONNECT
@@ -112,9 +128,10 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.BLUETOOTH
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            emptySet()
+            return emptySet()
         } else {
-            bluetoothAdapter.bondedDevices ?: emptySet()
+            pairedDevices.value = bluetoothAdapter.bondedDevices ?: emptySet()
+            return bluetoothAdapter.bondedDevices ?: emptySet()
         }
     }
 
@@ -128,6 +145,5 @@ class MainActivity : ComponentActivity() {
         } else {
             startService(serviceIntent)
         }
-        finish() // Optionally finish the activity if that's the desired flow.
     }
 }

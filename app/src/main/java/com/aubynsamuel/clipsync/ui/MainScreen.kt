@@ -4,121 +4,208 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import com.aubynsamuel.clipsync.SelectedDevicesStore
+import com.aubynsamuel.clipsync.ServiceLocator.bluetoothService
+import com.aubynsamuel.clipsync.showToast
+import com.aubynsamuel.clipsync.ui.theme.Colors
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-/** Define the parameters as functions:
- * - startBluetoothService: takes a set of selected device addresses.
- * - loadPairedDevices: returns a set of BluetoothDevice objects.
- * - launchShareActivity: given a Context, launches the share action.
- **/
 @Composable
 fun MainScreen(
-    startBluetoothService: (selectedDeviceAddresses: Set<String>) -> Unit,
-    loadPairedDevices: () -> Set<BluetoothDevice>,
+    startBluetoothService: (Set<String>) -> Unit,
+    pairedDevices: Set<BluetoothDevice>,
     launchShareActivity: (Context) -> Unit,
+    refresh: () -> Unit,
+    stopBluetoothService: () -> Unit,
 ) {
-    var pairedDevices by remember { mutableStateOf<Set<BluetoothDevice>>(emptySet()) }
     var selectedDeviceAddresses by remember { mutableStateOf<Set<String>>(emptySet()) }
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val c = Colors
 
-    // Load paired devices when the composable is launched.
-    LaunchedEffect(Unit) {
-        pairedDevices = loadPairedDevices()
+    LaunchedEffect(selectedDeviceAddresses) {
+        delay(300)
+        SelectedDevicesStore.addresses = selectedDeviceAddresses.toTypedArray()
+        delay(300)
+        bluetoothService?.updateSelectedDevices()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "ClipSync",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        Text(
-            text = "Select devices to share clipboard with:",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            items(pairedDevices.toList()) { device ->
-                val deviceName = if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.BLUETOOTH_CONNECT
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    "Unknown Device"
-                } else {
-                    device.name ?: "Unknown Device"
-                }
-                val deviceAddress = device.address
-                // Check whether the device is selected.
-                val isSelected = selectedDeviceAddresses.contains(deviceAddress)
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = isSelected,
-                        onCheckedChange = { checked ->
-                            selectedDeviceAddresses = if (checked) {
-                                selectedDeviceAddresses + deviceAddress
-                            } else {
-                                selectedDeviceAddresses - deviceAddress
-                            }
-                        }
+    Scaffold(
+        containerColor = c.background,
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(c.primary)
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                    .padding(top = 25.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "ClipSync",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 24.sp,
+                        color = c.onPrimary
                     )
-
-                    Column(modifier = Modifier.padding(start = 8.dp)) {
-                        Text(text = deviceName)
+                    AnimatedVisibility(
+                        selectedDeviceAddresses.isNotEmpty(),
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    ) {
                         Text(
-                            text = deviceAddress,
-                            style = MaterialTheme.typography.bodySmall
+                            text = selectedDeviceAddresses.count().toString(),
+                            fontSize = 18.sp,
+                            color = c.onPrimary, fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = "Refresh",
+                    tint = c.onPrimary,
+                    modifier = Modifier
+                        .clickable {
+                            refresh()
+                            showToast("Paired Devices Refreshed", context)
+                        }
+                        .padding(end = 5.dp)
+                )
             }
         }
-
-        Button(
-            onClick = { startBluetoothService(selectedDeviceAddresses) },
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            enabled = selectedDeviceAddresses.isNotEmpty()
+                .padding(padding)
+                .background(c.surface)
+                .padding(15.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Start Clipboard Sharing")
-        }
+            Text(
+                text = "Select devices to share clipboard with",
+                style = MaterialTheme.typography.bodyLarge,
+                color = c.textMedium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
 
-        Button(
-            onClick = { launchShareActivity(context) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        ) {
-            Text("Share Clipboard")
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(pairedDevices.toList()) { device ->
+                    val name = if (ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.BLUETOOTH_CONNECT
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) "Unknown Device" else device.name ?: "Unknown Device"
+                    val address = device.address
+                    val isSel = selectedDeviceAddresses.contains(address)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .clickable(onClick = {
+                                selectedDeviceAddresses =
+                                    if (!isSel) selectedDeviceAddresses + address
+                                    else selectedDeviceAddresses - address
+                            }),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = isSel,
+                            onCheckedChange = { checked ->
+                                selectedDeviceAddresses =
+                                    if (checked) selectedDeviceAddresses + address
+                                    else selectedDeviceAddresses - address
+                            }
+                        )
+                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                            Text(text = name, color = c.textDark)
+                            Text(
+                                text = address,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = c.textLight
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+                Button(
+                    onClick = { startBluetoothService(selectedDeviceAddresses) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(100.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = c.primary,
+                        contentColor = c.onPrimary
+                    )
+                ) { Text("Start") }
+
+                Button(
+                    onClick = {
+                        scope.launch {
+                            startBluetoothService(selectedDeviceAddresses)
+                            delay(500)
+                            launchShareActivity(context)
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(100.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = c.accent,
+                        contentColor = c.onPrimary
+                    )
+                ) { Text("Share") }
+
+                Button(
+                    onClick = stopBluetoothService,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(100.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = c.stopBg,
+                        contentColor = c.onPrimary
+                    )
+                ) { Text("Stop") }
+            }
         }
     }
 }

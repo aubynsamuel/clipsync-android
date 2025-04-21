@@ -8,10 +8,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
-class TransparentActivity : ComponentActivity() {
+class ShareClipboardActivity : ComponentActivity() {
     private var bluetoothService: BluetoothService? = null
     private var bound = false
     private var pendingShareAction = false
@@ -21,6 +22,7 @@ class TransparentActivity : ComponentActivity() {
             val binder = service as BluetoothService.LocalBinder
             bluetoothService = binder.getService()
             bound = true
+            ServiceLocator.bluetoothService = bluetoothService
 
             if (pendingShareAction) {
                 handleShareAction()
@@ -37,7 +39,6 @@ class TransparentActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Bind to the service
         Intent(this, BluetoothService::class.java).also { intent ->
             bindService(intent, connection, BIND_AUTO_CREATE)
         }
@@ -72,26 +73,47 @@ class TransparentActivity : ComponentActivity() {
     private fun handleShareAction() {
         Handler(Looper.getMainLooper()).postDelayed({
             val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clipText = clipboardManager.primaryClip
+                ?.getItemAt(0)
+                ?.text
+                .toString()
 
-//            unnecessary checks
-//            if (clipboardManager.hasPrimaryClip() &&
-//                clipboardManager.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true
-//            ) {
-            val clipItem = clipboardManager.primaryClip?.getItemAt(0)
-            val clipText = clipItem?.text?.toString() ?: ""
-
-            if (clipText.isNotEmpty()) {
-                bluetoothService?.shareClipboard(clipText)
-//                For testing
-//                shareTextFile(this, clipText)
-                Toast.makeText(this, "Clipboard shared!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Clipboard is empty", Toast.LENGTH_SHORT).show()
+            if (clipText.isEmpty()) {
+                showToast("Clipboard is empty", this)
+                finish()
             }
-//            } else {
-//                Toast.makeText(this, "No text in clipboard", Toast.LENGTH_SHORT).show()
-//            }
-            finish()
+
+            // launch a coroutine on Main by default
+            lifecycleScope.launch {
+                // this will suspend until shareClipboard returns
+                val result = bluetoothService?.shareClipboard(clipText)
+
+                // now we’re *sure* result has been set
+                when (result) {
+                    SharingResult.SUCCESS -> showToast(
+                        "Clipboard shared!",
+                        this@ShareClipboardActivity
+                    )
+
+                    SharingResult.SENDING_ERROR -> showToast(
+                        "Sending failed",
+                        this@ShareClipboardActivity
+                    )
+
+                    SharingResult.PERMISSION_NOT_GRANTED -> showToast(
+                        "Bluetooth permission not granted",
+                        this@ShareClipboardActivity
+                    )
+
+                    SharingResult.NO_SELECTED_DEVICES -> showToast(
+                        "No devices selected",
+                        this@ShareClipboardActivity
+                    )
+
+                    else -> showToast("Sending failed", this@ShareClipboardActivity)
+                }
+                finish()
+            }
         }, 300)
     }
 }
