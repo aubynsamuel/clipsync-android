@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.aubynsamuel.clipsync.SelectedDevicesStore
+import com.aubynsamuel.clipsync.ServiceLocator
 import com.aubynsamuel.clipsync.ServiceLocator.bluetoothService
 import com.aubynsamuel.clipsync.showToast
 import com.aubynsamuel.clipsync.ui.theme.Colors
@@ -63,7 +64,9 @@ fun MainScreen(
         delay(300)
         SelectedDevicesStore.addresses = selectedDeviceAddresses.toTypedArray()
         delay(300)
-        bluetoothService?.updateSelectedDevices()
+        if (bluetoothService != null) {
+            bluetoothService?.updateSelectedDevices()
+        }
     }
 
     Scaffold(
@@ -171,40 +174,37 @@ fun MainScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
                 Button(
-                    onClick = { startBluetoothService(selectedDeviceAddresses) },
+                    onClick = {
+                        if (ServiceLocator.serviceStarted.value)
+                            stopBluetoothService()
+                        else startBluetoothService(selectedDeviceAddresses)
+                    },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(100.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = c.primary,
+                        containerColor = if (ServiceLocator.serviceStarted.value) c.stopBg else c.primary,
                         contentColor = c.onPrimary
-                    )
-                ) { Text("Start") }
+                    ),
+                ) { Text(if (ServiceLocator.serviceStarted.value) "Stop" else "Start") }
 
                 Button(
                     onClick = {
                         scope.launch {
-                            startBluetoothService(selectedDeviceAddresses)
-                            delay(500)
+                            if (!ServiceLocator.serviceStarted.value) {
+                                startBluetoothService(selectedDeviceAddresses)
+                                delay(500)
+                            }
                             launchShareActivity(context)
                         }
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(100.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = c.accent,
+                        containerColor = c.primary,
                         contentColor = c.onPrimary
-                    )
+                    ),
+                    enabled = ServiceLocator.serviceStarted.value && selectedDeviceAddresses.isNotEmpty()
                 ) { Text("Share") }
-
-                Button(
-                    onClick = stopBluetoothService,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(100.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = c.stopBg,
-                        contentColor = c.onPrimary
-                    )
-                ) { Text("Stop") }
             }
         }
     }

@@ -22,7 +22,6 @@ class ShareClipboardActivity : ComponentActivity() {
             val binder = service as BluetoothService.LocalBinder
             bluetoothService = binder.getService()
             bound = true
-            ServiceLocator.bluetoothService = bluetoothService
 
             if (pendingShareAction) {
                 handleShareAction()
