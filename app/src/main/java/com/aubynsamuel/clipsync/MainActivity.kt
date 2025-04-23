@@ -53,7 +53,8 @@ class MainActivity : ComponentActivity() {
         bluetoothAdapter = bluetoothManager.adapter
 
         setContent {
-            ClipSyncTheme {
+            getTheme(this)
+            ClipSyncTheme(darkTheme = DarkMode.isDarkMode.value) {
                 MainScreen(
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)

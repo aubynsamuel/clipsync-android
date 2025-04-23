@@ -48,7 +48,7 @@ fun createServiceNotification(context: Context): Notification {
     return NotificationCompat.Builder(context, channelId)
         .setContentTitle("ClipSync Active")
         .setContentText("Ready to share clipboard")
-        .setSmallIcon(R.drawable.ic_clipboard)
+        .setSmallIcon(R.mipmap.ic_launcher)
         .addAction(0, "Share", sharePendingIntent)
         .addAction(0, "Dismiss", dismissPendingIntent)
         .setOngoing(true)
@@ -84,7 +84,7 @@ fun showReceivedNotification(text: String, context: Context) {
     val notification =
         NotificationCompat.Builder(context, channelId).setContentTitle("ClipText Received")
             .setContentText(text.take(50) + if (text.length > 50) "..." else "")
-            .setSmallIcon(R.drawable.ic_clipboard)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .addAction(0, "Copy", copyPendingIntent)
             .setAutoCancel(true)
             .build()

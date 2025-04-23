@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,11 +40,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import com.aubynsamuel.clipsync.DarkMode
 import com.aubynsamuel.clipsync.SelectedDevicesStore
 import com.aubynsamuel.clipsync.ServiceLocator
 import com.aubynsamuel.clipsync.ServiceLocator.bluetoothService
+import com.aubynsamuel.clipsync.changeTheme
 import com.aubynsamuel.clipsync.showToast
-import com.aubynsamuel.clipsync.ui.theme.Colors
+import com.aubynsamuel.clipsync.ui.components.DarkModeToggle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -58,7 +61,7 @@ fun MainScreen(
     var selectedDeviceAddresses by remember { mutableStateOf<Set<String>>(emptySet()) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val c = Colors
+    val colorScheme = MaterialTheme.colorScheme
 
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
@@ -70,12 +73,12 @@ fun MainScreen(
     }
 
     Scaffold(
-        containerColor = c.background,
+        containerColor = colorScheme.background,
         topBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(c.primary)
+                    .background(colorScheme.primary)
                     .padding(horizontal = 10.dp, vertical = 8.dp)
                     .padding(top = 25.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -86,7 +89,7 @@ fun MainScreen(
                         text = "ClipSync",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 24.sp,
-                        color = c.onPrimary
+                        color = colorScheme.onPrimary
                     )
                     AnimatedVisibility(
                         selectedDeviceAddresses.isNotEmpty(),
@@ -95,35 +98,44 @@ fun MainScreen(
                         Text(
                             text = selectedDeviceAddresses.count().toString(),
                             fontSize = 18.sp,
-                            color = c.onPrimary, fontWeight = FontWeight.SemiBold
+                            color = colorScheme.onPrimary, fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
-                Icon(
-                    Icons.Default.Refresh,
-                    contentDescription = "Refresh",
-                    tint = c.onPrimary,
-                    modifier = Modifier
-                        .clickable {
-                            refresh()
-                            showToast("Paired Devices Refreshed", context)
-                        }
-                        .padding(end = 5.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    DarkModeToggle(
+                        isDarkMode = DarkMode.isDarkMode.value,
+                        onToggle = { changeTheme(context) },
+                    )
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = colorScheme.onPrimary,
+                        modifier = Modifier
+                            .clickable {
+                                refresh()
+                                showToast("Paired Devices Refreshed", context)
+                            }
+                            .padding(end = 5.dp)
+                            .size(28.dp)
+                    )
+                }
             }
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
-                .background(c.surface)
                 .padding(15.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
                 text = "Select devices to share clipboard with",
                 style = MaterialTheme.typography.bodyLarge,
-                color = c.textMedium,
+                color = colorScheme.primary,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -161,11 +173,11 @@ fun MainScreen(
                             }
                         )
                         Column(modifier = Modifier.padding(start = 8.dp)) {
-                            Text(text = name, color = c.textDark)
+                            Text(text = name, color = colorScheme.onBackground)
                             Text(
                                 text = address,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = c.textLight
+                                color = colorScheme.onSurface
                             )
                         }
                     }
@@ -182,8 +194,8 @@ fun MainScreen(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(100.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (ServiceLocator.serviceStarted.value) c.stopBg else c.primary,
-                        contentColor = c.onPrimary
+                        containerColor = if (ServiceLocator.serviceStarted.value) colorScheme.error else colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
                     ),
                 ) { Text(if (ServiceLocator.serviceStarted.value) "Stop" else "Start") }
 
@@ -200,8 +212,8 @@ fun MainScreen(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(100.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = c.primary,
-                        contentColor = c.onPrimary
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
                     ),
                     enabled = ServiceLocator.serviceStarted.value && selectedDeviceAddresses.isNotEmpty()
                 ) { Text("Share") }
