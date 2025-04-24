@@ -97,14 +97,23 @@ fun DarkModeToggle(
 
     val moveX = animateFloatAsState(if (isDarkMode) 57f else 0f)
 
+    val wheelColorAnimation =
+        animateColorAsState(
+            targetValue = if (isDarkMode) Color.White else Color.Black,
+            animationSpec = tween(durationMillis = 1000),
+            label = "wheelColorAnimation"
+        )
+
     Row(
         modifier = Modifier
             .width(50.dp)
             .background(
-                if (isDarkMode) Color.White else Color.Black,
+                wheelColorAnimation.value,
                 RoundedCornerShape(15.dp)
             )
             .animateContentSize()
+            .clickable { onToggle() }
+
     ) {
         Box(
             modifier = modifier
