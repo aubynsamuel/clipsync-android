@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.core
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

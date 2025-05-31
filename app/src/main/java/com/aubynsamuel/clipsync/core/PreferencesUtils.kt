@@ -1,16 +1,11 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.core
 
 import android.content.Context
-import android.widget.Toast
 import androidx.core.content.edit
-import com.aubynsamuel.clipsync.Essentials.isDarkMode
+import com.aubynsamuel.clipsync.core.Essentials.isDarkMode
 
 const val tag = "BluetoothService"
 const val key = "isDarkMode"
-
-fun showToast(msg: String, context: Context) {
-    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-}
 
 fun changeTheme(context: Context) {
     isDarkMode = !isDarkMode

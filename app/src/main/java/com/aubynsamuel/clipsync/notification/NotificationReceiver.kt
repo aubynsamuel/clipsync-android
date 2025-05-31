@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.notification
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -6,6 +6,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.core.showToast
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -28,7 +31,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 clipboardManager.setPrimaryClip(clipData)
 
                 // On Android 13+, the system shows its own toast when setting clipboard
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     showToast("Copied to clipboard", context)
                 }
 

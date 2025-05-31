@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.notification
 
 import android.Manifest
 import android.app.Notification
@@ -12,6 +12,9 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.aubynsamuel.clipsync.R
+import com.aubynsamuel.clipsync.activities.MainActivity
+import com.aubynsamuel.clipsync.activities.ShareClipboardActivity
 
 const val channelId = "ClipSyncServiceChannel"
 

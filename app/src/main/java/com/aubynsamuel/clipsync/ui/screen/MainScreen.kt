@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync.ui
+package com.aubynsamuel.clipsync.ui.screen
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
@@ -15,12 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,15 +36,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import com.aubynsamuel.clipsync.BluetoothService
-import com.aubynsamuel.clipsync.Essentials.addresses
-import com.aubynsamuel.clipsync.Essentials.isDarkMode
-import com.aubynsamuel.clipsync.Essentials.serviceStarted
-import com.aubynsamuel.clipsync.changeTheme
-import com.aubynsamuel.clipsync.showToast
-import com.aubynsamuel.clipsync.ui.components.DarkModeToggle
+import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.core.Essentials.addresses
+import com.aubynsamuel.clipsync.core.Essentials.isDarkMode
+import com.aubynsamuel.clipsync.core.Essentials.serviceStarted
+import com.aubynsamuel.clipsync.core.changeTheme
+import com.aubynsamuel.clipsync.core.showToast
+import com.aubynsamuel.clipsync.ui.component.ActionButtons
+import com.aubynsamuel.clipsync.ui.component.DarkModeToggle
+import com.aubynsamuel.clipsync.ui.component.DeviceItem
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -151,73 +148,28 @@ fun MainScreen(
                         ) != PackageManager.PERMISSION_GRANTED
                     ) "Unknown Device" else device.name ?: "Unknown Device"
                     val address = device.address
-                    val isSel = selectedDeviceAddresses.contains(address)
+                    val isSelected = selectedDeviceAddresses.contains(address)
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .clickable(onClick = {
-                                selectedDeviceAddresses =
-                                    if (!isSel) selectedDeviceAddresses + address
-                                    else selectedDeviceAddresses - address
-                            }),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = isSel,
-                            onCheckedChange = { checked ->
-                                selectedDeviceAddresses =
-                                    if (checked) selectedDeviceAddresses + address
-                                    else selectedDeviceAddresses - address
-                            }
-                        )
-                        Column(modifier = Modifier.padding(start = 8.dp)) {
-                            Text(text = name, color = colorScheme.onBackground)
-                            Text(
-                                text = address,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colorScheme.onSurface
-                            )
-                        }
-                    }
+                    DeviceItem(
+                        onChecked = {
+                            selectedDeviceAddresses =
+                                if (!isSelected) selectedDeviceAddresses + address
+                                else selectedDeviceAddresses - address
+                        },
+                        checked = isSelected,
+                        name = name,
+                        address = address
+                    )
                 }
             }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
-                Button(
-                    onClick = {
-                        if (serviceStarted)
-                            stopBluetoothService()
-                        else startBluetoothService(selectedDeviceAddresses)
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(100.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (serviceStarted) colorScheme.error else colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
-                    ),
-                ) { Text(if (serviceStarted) "Stop" else "Start") }
-
-                Button(
-                    onClick = {
-                        scope.launch {
-                            if (!serviceStarted) {
-                                startBluetoothService(selectedDeviceAddresses)
-                                delay(500)
-                            }
-                            launchShareActivity(context)
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(100.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
-                    ),
-                    enabled = serviceStarted && selectedDeviceAddresses.isNotEmpty()
-                ) { Text("Share") }
-            }
+            ActionButtons(
+                startBluetoothService = startBluetoothService,
+                launchShareActivity = launchShareActivity,
+                stopBluetoothService = stopBluetoothService,
+                selectedDeviceAddresses = selectedDeviceAddresses,
+                scope = scope,
+                context = context
+            )
         }
     }
 }
