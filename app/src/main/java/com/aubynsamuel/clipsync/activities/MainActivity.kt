@@ -13,27 +13,29 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
 import com.aubynsamuel.clipsync.core.Essentials
-import com.aubynsamuel.clipsync.core.showToast
 import com.aubynsamuel.clipsync.ui.screen.MainScreen
 import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
-    private var pairedDevices = mutableStateOf<Set<BluetoothDevice>>(emptySet())
+    private var pairedDevices by mutableStateOf<Set<BluetoothDevice>>(emptySet())
 
     private val requestEnableBluetooth = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            loadPairedDevices()
-        } else {
-            showToast("Bluetooth is required to find devices.", this)
-            checkBluetoothEnabled()
+            getLoadedDevicesList()
         }
+        /** else {
+        showToast("Bluetooth is required to find devices.", this)
+        checkBluetoothEnabled()
+        } */
     }
 
     private val requestPermissionsLauncher = registerForActivityResult(
@@ -42,10 +44,11 @@ class MainActivity : ComponentActivity() {
         val allGranted = permissions.entries.all { it.value }
         if (allGranted) {
             checkBluetoothEnabled()
-        } else {
-            showToast("Permissions needed to start sharing", this)
-            checkPermissions()
         }
+        /** else {
+        showToast("Permissions needed to start sharing", this)
+        checkPermissions()
+        } */
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -62,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)
                     },
-                    pairedDevices = pairedDevices.value,
+                    pairedDevices = pairedDevices,
                     launchShareActivity = { context ->
                         val shareIntent =
                             Intent(context, ShareClipboardActivity::class.java).apply {
@@ -70,7 +73,7 @@ class MainActivity : ComponentActivity() {
                             }
                         context.startActivity(shareIntent)
                     },
-                    refresh = { loadPairedDevices() },
+                    refresh = { getLoadedDevicesList() },
                     stopBluetoothService = { stopBluetoothService() },
                 )
             }
@@ -114,12 +117,17 @@ class MainActivity : ComponentActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             requestEnableBluetooth.launch(enableBtIntent)
         } else {
-            loadPairedDevices()
+            getLoadedDevicesList()
         }
     }
 
+    /** Wrapper around loadPairedDevices for MainScreen composable*/
+    fun getLoadedDevicesList() {
+        pairedDevices = loadPairedDevices()
+    }
+
     private fun loadPairedDevices(): Set<BluetoothDevice> {
-        if (ActivityCompat.checkSelfPermission(
+        return if (ActivityCompat.checkSelfPermission(
                 this,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                     Manifest.permission.BLUETOOTH_CONNECT
@@ -127,10 +135,9 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.BLUETOOTH
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            return emptySet()
+            emptySet()
         } else {
-            pairedDevices.value = bluetoothAdapter.bondedDevices ?: emptySet()
-            return bluetoothAdapter.bondedDevices ?: emptySet()
+            bluetoothAdapter.bondedDevices ?: emptySet()
         }
     }
 

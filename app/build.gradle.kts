@@ -19,6 +19,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
     buildTypes {
         release {
             val boolean = false
@@ -43,6 +47,13 @@ android {
 }
 
 dependencies {
+    testImplementation(libs.androidx.ui.test.junit4.android)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.test.core)
+
     // Status Bar
     implementation(libs.accompanist.systemuicontroller)
     // Material Icons
