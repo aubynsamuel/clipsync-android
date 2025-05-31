@@ -1,54 +1,75 @@
 package com.aubynsamuel.clipsync.activities
 
 import android.content.ClipboardManager
-import android.content.ComponentName
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.Handler
-import android.os.IBinder
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
+import com.aubynsamuel.clipsync.activities.shareclipboard.AndroidClipboardRepository
+import com.aubynsamuel.clipsync.activities.shareclipboard.BluetoothServiceConnection
+import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardPresenter
+import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardUseCase
+import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardView
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
-import com.aubynsamuel.clipsync.bluetooth.SharingResult
 import com.aubynsamuel.clipsync.core.showToast
 import kotlinx.coroutines.launch
 
-class ShareClipboardActivity : ComponentActivity() {
-    private var bluetoothService: BluetoothService? = null
+class ShareClipboardActivity : ComponentActivity(), ShareClipboardView {
+    companion object {
+        const val ACTION_SHARE = "ACTION_SHARE"
+        private const val SHARE_DELAY_MS = 300L
+    }
+
+    private var presenter: ShareClipboardPresenter? = null
+    private var serviceConnection: BluetoothServiceConnection? = null
     private var bound = false
     private var pendingShareAction = false
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as BluetoothService.LocalBinder
-            bluetoothService = binder.getService()
-            bound = true
-
-            if (pendingShareAction) {
-                handleShareAction()
-                pendingShareAction = false
-            }
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            bound = false
-            bluetoothService = null
-        }
-    }
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Intent(this, BluetoothService::class.java).also { intent ->
-            bindService(intent, connection, BIND_AUTO_CREATE)
-        }
+        setupServiceConnection()
+        bindToBluetoothService()
+        handleIntent()
+    }
 
+    private fun setupServiceConnection() {
+        serviceConnection = BluetoothServiceConnection(
+            onServiceConnected = { service ->
+                bound = true
+                initializePresenter(service)
+                if (pendingShareAction) {
+                    executeShareAction()
+                    pendingShareAction = false
+                }
+            },
+            onServiceDisconnected = {
+                bound = false
+                presenter = null
+            }
+        )
+    }
+
+    private fun bindToBluetoothService() {
+        val intent = Intent(this, BluetoothService::class.java)
+        bindService(intent, serviceConnection!!, BIND_AUTO_CREATE)
+    }
+
+    private fun initializePresenter(bluetoothService: BluetoothService) {
+        val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboardRepository = AndroidClipboardRepository(clipboardManager)
+        val shareClipboardUseCase = ShareClipboardUseCase(clipboardRepository, bluetoothService)
+        presenter = ShareClipboardPresenter(shareClipboardUseCase, this)
+    }
+
+    private fun handleIntent() {
         when (intent?.action) {
-            "ACTION_SHARE" -> {
+            ACTION_SHARE -> {
                 if (bound) {
-                    handleShareAction()
+                    executeShareAction()
                 } else {
                     pendingShareAction = true
                 }
@@ -62,55 +83,28 @@ class ShareClipboardActivity : ComponentActivity() {
         }
     }
 
+    private fun executeShareAction() {
+        handler.postDelayed({
+            lifecycleScope.launch {
+                presenter?.handleShare()
+            }
+        }, SHARE_DELAY_MS)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (bound) {
-            unbindService(connection)
+            serviceConnection?.let { unbindService(it) }
             bound = false
         }
+        handler.removeCallbacksAndMessages(null)
     }
 
-    private fun handleShareAction() {
-        Handler(Looper.getMainLooper()).postDelayed({
-            val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            val clipText = clipboardManager.primaryClip
-                ?.getItemAt(0)
-                ?.text
-                .toString()
-            if (clipText == "null" || clipText.isBlank()) {
-                showToast("Clipboard is empty", this)
-                finish()
-                return@postDelayed
-            }
+    override fun showMessage(message: String) {
+        showToast(message, this)
+    }
 
-            lifecycleScope.launch {
-                val result = bluetoothService?.shareClipboard(clipText)
-
-                when (result) {
-                    SharingResult.SUCCESS -> showToast(
-                        "Clipboard shared!",
-                        this@ShareClipboardActivity
-                    )
-
-                    SharingResult.SENDING_ERROR -> showToast(
-                        "Sending failed",
-                        this@ShareClipboardActivity
-                    )
-
-                    SharingResult.PERMISSION_NOT_GRANTED -> showToast(
-                        "Bluetooth permission not granted",
-                        this@ShareClipboardActivity
-                    )
-
-                    SharingResult.NO_SELECTED_DEVICES -> showToast(
-                        "No devices selected",
-                        this@ShareClipboardActivity
-                    )
-
-                    else -> showToast("Sending failed", this@ShareClipboardActivity)
-                }
-                finish()
-            }
-        }, 300)
+    override fun finishActivity() {
+        finish()
     }
 }

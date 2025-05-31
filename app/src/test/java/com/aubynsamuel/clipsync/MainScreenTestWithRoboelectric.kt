@@ -1,6 +1,5 @@
 package com.aubynsamuel.clipsync
 
-
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
