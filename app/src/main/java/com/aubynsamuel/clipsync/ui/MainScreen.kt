@@ -40,10 +40,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import com.aubynsamuel.clipsync.DarkMode
-import com.aubynsamuel.clipsync.SelectedDevicesStore
-import com.aubynsamuel.clipsync.ServiceLocator
-import com.aubynsamuel.clipsync.ServiceLocator.bluetoothService
+import com.aubynsamuel.clipsync.BluetoothService
+import com.aubynsamuel.clipsync.Essentials.addresses
+import com.aubynsamuel.clipsync.Essentials.isDarkMode
+import com.aubynsamuel.clipsync.Essentials.serviceStarted
 import com.aubynsamuel.clipsync.changeTheme
 import com.aubynsamuel.clipsync.showToast
 import com.aubynsamuel.clipsync.ui.components.DarkModeToggle
@@ -65,10 +65,10 @@ fun MainScreen(
 
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
-        SelectedDevicesStore.addresses = selectedDeviceAddresses.toTypedArray()
+        addresses = selectedDeviceAddresses.toTypedArray()
         delay(300)
-        if (bluetoothService != null) {
-            bluetoothService?.updateSelectedDevices()
+        if (serviceStarted) {
+            BluetoothService().updateSelectedDevices()
         }
     }
 
@@ -107,7 +107,7 @@ fun MainScreen(
                     horizontalArrangement = Arrangement.spacedBy(15.dp)
                 ) {
                     DarkModeToggle(
-                        isDarkMode = DarkMode.isDarkMode.value,
+                        isDarkMode = isDarkMode,
                         onToggle = { changeTheme(context) },
                     )
                     Icon(
@@ -187,22 +187,22 @@ fun MainScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
                 Button(
                     onClick = {
-                        if (ServiceLocator.serviceStarted.value)
+                        if (serviceStarted)
                             stopBluetoothService()
                         else startBluetoothService(selectedDeviceAddresses)
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(100.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (ServiceLocator.serviceStarted.value) colorScheme.error else colorScheme.primary,
+                        containerColor = if (serviceStarted) colorScheme.error else colorScheme.primary,
                         contentColor = colorScheme.onPrimary
                     ),
-                ) { Text(if (ServiceLocator.serviceStarted.value) "Stop" else "Start") }
+                ) { Text(if (serviceStarted) "Stop" else "Start") }
 
                 Button(
                     onClick = {
                         scope.launch {
-                            if (!ServiceLocator.serviceStarted.value) {
+                            if (!serviceStarted) {
                                 startBluetoothService(selectedDeviceAddresses)
                                 delay(500)
                             }
@@ -215,7 +215,7 @@ fun MainScreen(
                         containerColor = colorScheme.primary,
                         contentColor = colorScheme.onPrimary
                     ),
-                    enabled = ServiceLocator.serviceStarted.value && selectedDeviceAddresses.isNotEmpty()
+                    enabled = serviceStarted && selectedDeviceAddresses.isNotEmpty()
                 ) { Text("Share") }
             }
         }

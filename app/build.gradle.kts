@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.dagger.hilt)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -47,6 +49,10 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     // Material Icons
     implementation(libs.androidx.material.icons.extended)
+    // Dependency Injection
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    ksp(libs.hilt.android.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

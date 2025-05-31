@@ -15,9 +15,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
+import com.aubynsamuel.clipsync.Essentials.isDarkMode
 import com.aubynsamuel.clipsync.ui.MainScreen
 import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var pairedDevices = mutableStateOf<Set<BluetoothDevice>>(emptySet())
@@ -54,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             getTheme(this)
-            ClipSyncTheme(darkTheme = DarkMode.isDarkMode.value) {
+            ClipSyncTheme(darkTheme = isDarkMode) {
                 MainScreen(
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)
