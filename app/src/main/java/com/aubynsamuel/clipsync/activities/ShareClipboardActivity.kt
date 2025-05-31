@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.activities
 
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -10,6 +10,9 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
+import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.bluetooth.SharingResult
+import com.aubynsamuel.clipsync.core.showToast
 import kotlinx.coroutines.launch
 
 class ShareClipboardActivity : ComponentActivity() {

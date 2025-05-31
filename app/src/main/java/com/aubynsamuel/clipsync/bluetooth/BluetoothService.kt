@@ -1,5 +1,6 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.bluetooth
 
+import android.Manifest
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -12,6 +13,10 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import com.aubynsamuel.clipsync.core.Essentials
+import com.aubynsamuel.clipsync.notification.createNotificationChannel
+import com.aubynsamuel.clipsync.notification.createServiceNotification
+import com.aubynsamuel.clipsync.notification.showReceivedNotification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -32,7 +37,7 @@ class BluetoothService : Service() {
     private var selectedDeviceAddresses = arrayOf<String>()
     private var serverSocket: BluetoothServerSocket? = null
     private var receiverThread: Thread? = null
-    private val uuidInsecure = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
+    private val uuid = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
 
     private val binder = LocalBinder()
 
@@ -42,8 +47,7 @@ class BluetoothService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        ServiceLocator.bluetoothService = this@BluetoothService
-        ServiceLocator.serviceStarted.value = true
+        Essentials.serviceStarted = true
         createNotificationChannel(this)
 
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -67,7 +71,7 @@ class BluetoothService : Service() {
     }
 
     fun updateSelectedDevices() {
-        selectedDeviceAddresses = SelectedDevicesStore.addresses
+        selectedDeviceAddresses = Essentials.addresses
         createServiceNotification(this)
     }
 
@@ -75,7 +79,7 @@ class BluetoothService : Service() {
         serviceScope.launch {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)
                         != PackageManager.PERMISSION_GRANTED
                     ) {
                         Log.e(tag, "Bluetooth connect permission not granted")
@@ -83,8 +87,8 @@ class BluetoothService : Service() {
                     }
                 }
 
-                serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(
-                    "ClipSync", uuidInsecure
+                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(
+                    "ClipSync", uuid
                 )
 
                 receiverThread = Thread {
@@ -146,7 +150,7 @@ class BluetoothService : Service() {
     private suspend fun sendToDevice(device: BluetoothDevice, text: String): SharingResult {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)
                     != PackageManager.PERMISSION_GRANTED
                 ) {
                     Log.e(tag, "Bluetooth connect permission not granted")
@@ -154,7 +158,7 @@ class BluetoothService : Service() {
                 }
             }
 
-            val socket = device.createInsecureRfcommSocketToServiceRecord(uuidInsecure)
+            val socket = device.createRfcommSocketToServiceRecord(uuid)
             socket.connect()
 
             val outputStream = socket.outputStream
@@ -180,8 +184,7 @@ class BluetoothService : Service() {
         try {
             serverSocket?.close()
             receiverThread?.interrupt()
-            ServiceLocator.serviceStarted.value = false
-            ServiceLocator.bluetoothService = null
+            Essentials.serviceStarted = false
         } catch (e: IOException) {
             Log.e(tag, "Error closing server socket", e)
         }
@@ -191,11 +194,4 @@ class BluetoothService : Service() {
         stopBluetoothServer()
         super.onDestroy()
     }
-}
-
-enum class SharingResult {
-    SENDING_ERROR,
-    PERMISSION_NOT_GRANTED,
-    NO_SELECTED_DEVICES,
-    SUCCESS
 }

@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync
+package com.aubynsamuel.clipsync.activities
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -15,7 +15,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
-import com.aubynsamuel.clipsync.ui.MainScreen
+import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.core.Essentials
+import com.aubynsamuel.clipsync.core.showToast
+import com.aubynsamuel.clipsync.ui.screen.MainScreen
 import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
 
 class MainActivity : ComponentActivity() {
@@ -53,8 +56,8 @@ class MainActivity : ComponentActivity() {
         bluetoothAdapter = bluetoothManager.adapter
 
         setContent {
-            getTheme(this)
-            ClipSyncTheme(darkTheme = DarkMode.isDarkMode.value) {
+            com.aubynsamuel.clipsync.core.getTheme(this)
+            ClipSyncTheme(darkTheme = Essentials.isDarkMode) {
                 MainScreen(
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)

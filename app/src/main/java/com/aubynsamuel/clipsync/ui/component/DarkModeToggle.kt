@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync.ui.components
+package com.aubynsamuel.clipsync.ui.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
