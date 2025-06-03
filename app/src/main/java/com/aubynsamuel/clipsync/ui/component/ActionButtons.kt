@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardUseCase
+import com.aubynsamuel.clipsync.core.Essentials
 import com.aubynsamuel.clipsync.core.Essentials.serviceStarted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -19,12 +21,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun ActionButtons(
     startBluetoothService: (Set<String>) -> Unit,
-    launchShareActivity: (Context) -> Unit,
     stopBluetoothService: () -> Unit,
     selectedDeviceAddresses: Set<String>,
     scope: CoroutineScope,
     context: Context,
 ) {
+
     Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
         Button(
             onClick = {
@@ -47,7 +49,11 @@ fun ActionButtons(
                         startBluetoothService(selectedDeviceAddresses)
                         delay(500)
                     }
-                    launchShareActivity(context)
+
+                    ShareClipboardUseCase(context).execute(
+                        bluetoothService = null,
+                        essentialsBluetoothService = Essentials.bluetoothService,
+                    )
                 }
             },
             modifier = Modifier.weight(1f),

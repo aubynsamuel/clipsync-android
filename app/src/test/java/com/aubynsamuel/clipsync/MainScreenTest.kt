@@ -1,7 +1,6 @@
 package com.aubynsamuel.clipsync
 
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -25,7 +24,7 @@ class MainScreenTest {
     val composeTestRule = createComposeRule()
 
     private val mockStartBluetoothService: (Set<String>) -> Unit = mock()
-    private val mockLaunchShareActivity: (Context) -> Unit = mock()
+
     private val mockRefresh: () -> Unit = mock()
     private val mockStopBluetoothService: () -> Unit = mock()
 
@@ -37,7 +36,6 @@ class MainScreenTest {
             MainScreen(
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
-                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
                 stopBluetoothService = mockStopBluetoothService
             )
@@ -54,7 +52,7 @@ class MainScreenTest {
             MainScreen(
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
-                launchShareActivity = mockLaunchShareActivity,
+//                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
                 stopBluetoothService = mockStopBluetoothService
             )
@@ -71,7 +69,6 @@ class MainScreenTest {
             MainScreen(
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
-                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
                 stopBluetoothService = mockStopBluetoothService
             )
@@ -97,14 +94,12 @@ class MainScreenTest {
             MainScreen(
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = pairedDevices,
-                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
                 stopBluetoothService = mockStopBluetoothService
             )
         }
 
         composeTestRule.onNodeWithText("ClipSync").assertIsDisplayed()
-        // Note: Device names might not show due to permission requirements in test environment
     }
 
     @Test
@@ -115,7 +110,6 @@ class MainScreenTest {
             MainScreen(
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
-                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
                 stopBluetoothService = mockStopBluetoothService
             )
@@ -134,7 +128,6 @@ class MainScreenTest {
             MainScreen(
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
-                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
                 stopBluetoothService = mockStopBluetoothService
             )

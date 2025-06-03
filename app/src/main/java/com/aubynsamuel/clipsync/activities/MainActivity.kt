@@ -66,13 +66,6 @@ class MainActivity : ComponentActivity() {
                         startBluetoothService(selectedDeviceAddresses)
                     },
                     pairedDevices = pairedDevices,
-                    launchShareActivity = { context ->
-                        val shareIntent =
-                            Intent(context, ShareClipboardActivity::class.java).apply {
-                                action = "ACTION_SHARE"
-                            }
-                        context.startActivity(shareIntent)
-                    },
                     refresh = { getLoadedDevicesList() },
                     stopBluetoothService = { stopBluetoothService() },
                 )

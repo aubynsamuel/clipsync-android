@@ -2,7 +2,6 @@ package com.aubynsamuel.clipsync.ui.screen
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.content.pm.PackageManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -36,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.core.Essentials
 import com.aubynsamuel.clipsync.core.Essentials.addresses
 import com.aubynsamuel.clipsync.core.Essentials.isDarkMode
 import com.aubynsamuel.clipsync.core.Essentials.serviceStarted
@@ -51,7 +50,6 @@ import kotlinx.coroutines.delay
 fun MainScreen(
     startBluetoothService: (Set<String>) -> Unit,
     pairedDevices: Set<BluetoothDevice>,
-    launchShareActivity: (Context) -> Unit,
     refresh: () -> Unit,
     stopBluetoothService: () -> Unit,
 ) {
@@ -65,7 +63,7 @@ fun MainScreen(
         addresses = selectedDeviceAddresses.toTypedArray()
         delay(300)
         if (serviceStarted) {
-            BluetoothService().updateSelectedDevices()
+            Essentials.bluetoothService?.updateSelectedDevices()
         }
     }
 
@@ -164,7 +162,6 @@ fun MainScreen(
             }
             ActionButtons(
                 startBluetoothService = startBluetoothService,
-                launchShareActivity = launchShareActivity,
                 stopBluetoothService = stopBluetoothService,
                 selectedDeviceAddresses = selectedDeviceAddresses,
                 scope = scope,

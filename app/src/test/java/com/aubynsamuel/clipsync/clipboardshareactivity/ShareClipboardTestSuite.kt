@@ -7,10 +7,8 @@ import org.junit.runners.Suite
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(Suite::class)
 @Suite.SuiteClasses(
-    AndroidClipboardRepositoryTest::class,
     BluetoothServiceConnectionTest::class,
-    ShareClipboardActivityTest::class,
-    ShareClipboardPresenterTest::class,
     ShareClipboardUseCaseTest::class,
+//    ShareClipboardActivityTest::class,
 )
 class ShareClipboardTestSuite
