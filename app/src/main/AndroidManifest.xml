@@ -57,9 +57,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-
         <receiver
             android:name=".notification.NotificationReceiver"
             android:exported="false" />
     </application>
+
 </manifest>
