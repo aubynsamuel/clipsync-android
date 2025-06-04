@@ -35,9 +35,6 @@ class ShareClipboardUseCaseTest {
     private lateinit var bluetoothService: BluetoothService
 
     @Mock
-    private lateinit var essentialsBluetoothService: BluetoothService
-
-    @Mock
     private lateinit var clipData: ClipData
 
     @Mock
@@ -64,7 +61,7 @@ class ShareClipboardUseCaseTest {
     }
 
     @Test
-    fun `execute with valid clipboard text and bluetoothService parameter should share successfully`() =
+    fun `execute with valid clipboard text and bluetoothService should share successfully`() =
         runTest {
             // Given
             val clipText = "Test clipboard content"
@@ -74,7 +71,7 @@ class ShareClipboardUseCaseTest {
             `when`(bluetoothService.shareClipboard(clipText)).thenReturn(SharingResult.SUCCESS)
 
             // When
-            shareClipboardUseCase.execute(bluetoothService, null)
+            shareClipboardUseCase.execute(bluetoothService)
 
             // Then
             verify(bluetoothService).shareClipboard(clipText)
@@ -82,24 +79,19 @@ class ShareClipboardUseCaseTest {
         }
 
     @Test
-    fun `execute with null bluetoothService parameter should use Essentials bluetoothService`() =
+    fun `execute with null bluetoothService should return SENDING_ERROR`() =
         runTest {
             // Given
             val clipText = "Test clipboard content"
             `when`(clipboardManager.primaryClip).thenReturn(clipData)
             `when`(clipData.getItemAt(0)).thenReturn(clipItem)
             `when`(clipItem.text).thenReturn(clipText)
-            `when`(essentialsBluetoothService.shareClipboard(clipText)).thenReturn(SharingResult.SUCCESS)
 
             // When
-            shareClipboardUseCase.execute(
-                bluetoothService = null,
-                essentialsBluetoothService = essentialsBluetoothService,
+            shareClipboardUseCase.execute(null)
 
-                )
-
-            verify(essentialsBluetoothService).shareClipboard(clipText)
-            assertEquals("Clipboard shared!", ShadowToast.getTextOfLatestToast())
+            // Then
+            assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
         }
 
     @Test
@@ -109,7 +101,7 @@ class ShareClipboardUseCaseTest {
         `when`(bluetoothService.shareClipboard("null")).thenReturn(SharingResult.SENDING_ERROR)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
         verify(bluetoothService).shareClipboard("null")
@@ -119,17 +111,17 @@ class ShareClipboardUseCaseTest {
     @Test
     fun `execute with blank clipboard text should send null string`() = runTest {
         // Given
-        val clipText = "   " // blank text
+        val clipText = "  " // blank text
         `when`(clipboardManager.primaryClip).thenReturn(clipData)
         `when`(clipData.getItemAt(0)).thenReturn(clipItem)
         `when`(clipItem.text).thenReturn(clipText)
         `when`(bluetoothService.shareClipboard("null")).thenReturn(SharingResult.SENDING_ERROR)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
-        verify(bluetoothService).shareClipboard("null")
+        verify(bluetoothService).shareClipboard("  ")
         assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
     }
 
@@ -142,7 +134,7 @@ class ShareClipboardUseCaseTest {
         `when`(bluetoothService.shareClipboard("null")).thenReturn(SharingResult.SENDING_ERROR)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
         verify(bluetoothService).shareClipboard("null")
@@ -159,7 +151,7 @@ class ShareClipboardUseCaseTest {
         `when`(bluetoothService.shareClipboard(clipText)).thenReturn(SharingResult.SENDING_ERROR)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
         assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
@@ -175,7 +167,7 @@ class ShareClipboardUseCaseTest {
         `when`(bluetoothService.shareClipboard(clipText)).thenReturn(SharingResult.PERMISSION_NOT_GRANTED)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
         assertEquals("Bluetooth permission not granted", ShadowToast.getTextOfLatestToast())
@@ -191,7 +183,7 @@ class ShareClipboardUseCaseTest {
         `when`(bluetoothService.shareClipboard(clipText)).thenReturn(SharingResult.NO_SELECTED_DEVICES)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
         assertEquals("No devices selected", ShadowToast.getTextOfLatestToast())
@@ -207,27 +199,11 @@ class ShareClipboardUseCaseTest {
         `when`(bluetoothService.shareClipboard(clipText)).thenReturn(null)
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
         assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
     }
-
-    @Test
-    fun `execute with both bluetoothService and Essentials bluetoothService null should return SENDING_ERROR`() =
-        runTest {
-            // Given
-            val clipText = "Test content"
-            `when`(clipboardManager.primaryClip).thenReturn(clipData)
-            `when`(clipData.getItemAt(0)).thenReturn(clipItem)
-            `when`(clipItem.text).thenReturn(clipText)
-
-            // When
-            shareClipboardUseCase.execute(null, null)
-
-            // Then
-            assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
-        }
 
     @Test
     fun `execute should handle exception and show error message`() = runTest {
@@ -235,11 +211,10 @@ class ShareClipboardUseCaseTest {
         `when`(clipboardManager.primaryClip).thenThrow(RuntimeException("Test exception"))
 
         // When
-        shareClipboardUseCase.execute(bluetoothService, null)
+        shareClipboardUseCase.execute(bluetoothService)
 
         // Then
-//        assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
-        assertEquals(null, ShadowToast.getTextOfLatestToast())
+        assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
     }
 
     @Test

@@ -1,78 +1,49 @@
 package com.aubynsamuel.clipsync.activities
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.lifecycleScope
-import com.aubynsamuel.clipsync.activities.shareclipboard.BluetoothServiceConnection
-import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardUseCase
-import com.aubynsamuel.clipsync.bluetooth.BluetoothService
-import kotlinx.coroutines.launch
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.aubynsamuel.clipsync.activities.shareclipboard.GetClipTextUseCase
+import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardWorker
+import com.aubynsamuel.clipsync.core.tag
 
 class ShareClipboardActivity : ComponentActivity() {
-    private var bluetoothService: BluetoothService? = null
-    private var bound = false
-    private var pendingShareAction = false
-    private val handler = Handler(Looper.getMainLooper())
-
-    private val connection = BluetoothServiceConnection(
-        onServiceConnected = { service ->
-            bluetoothService = service
-            bound = true
-
-            if (pendingShareAction) {
-                handleShareAction()
-                pendingShareAction = false
-            }
-        },
-        onServiceDisconnected = {
-            bound = false
-            bluetoothService = null
-        }
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Intent(this, BluetoothService::class.java).also { intent ->
-            bindService(intent, connection, BIND_AUTO_CREATE)
-        }
-
         when (intent?.action) {
-            "ACTION_SHARE" -> {
-                if (bound) {
-                    handleShareAction()
-                } else {
-                    pendingShareAction = true
-                }
-            }
+            "ACTION_SHARE" -> handleShareAction()
 
-            else -> {
-                if (!pendingShareAction) {
-                    finish()
-                }
-            }
-        }
-    }
+            else -> finish()
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (bound) {
-            unbindService(connection)
-            bound = false
         }
     }
 
     private fun handleShareAction() {
-        handler.postDelayed({
-            lifecycleScope.launch {
-                ShareClipboardUseCase(this@ShareClipboardActivity).execute(
-                    bluetoothService = bluetoothService,
-                    essentialsBluetoothService = null,
-                    callBack = { finish() }
-                )
+        Handler(Looper.getMainLooper()).postDelayed({
+            try {
+                val clipText = GetClipTextUseCase(this).invoke()
+                Log.d(tag, "ShareClipboardActivity: Clipboard text: $clipText")
+                val inputData = Data.Builder()
+                    .putString(ShareClipboardWorker.KEY_CLIP_TEXT, clipText.toString())
+                    .build()
+
+                val shareWorkRequest = OneTimeWorkRequestBuilder<ShareClipboardWorker>()
+                    .setInputData(inputData)
+                    .build()
+
+                WorkManager.getInstance(applicationContext).enqueue(shareWorkRequest)
+                Log.d(tag, "ShareClipboardActivity: Enqueued ShareClipboardWorker.")
+            } catch (e: Exception) {
+                Log.e(tag, "ShareClipboardActivity: Failed to get clip text. Reason: ${e.message}")
+            } finally {
+                finish()
             }
         }, 300)
     }

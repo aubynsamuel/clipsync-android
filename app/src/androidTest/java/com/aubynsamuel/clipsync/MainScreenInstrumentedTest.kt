@@ -71,7 +71,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -88,7 +88,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -105,7 +105,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -137,7 +137,7 @@ class MainScreenInstrumentedTest {
                 MainScreen(
                     startBluetoothService = startBluetoothService,
                     pairedDevices = pairedDevices,
-                    launchShareActivity = launchShareActivity,
+
                     refresh = refresh,
                     stopBluetoothService = stopBluetoothService
                 )
@@ -175,7 +175,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -198,7 +198,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -216,7 +216,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -234,7 +234,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -259,7 +259,7 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
+
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )
@@ -294,7 +294,7 @@ class MainScreenInstrumentedTest {
                 MainScreen(
                     startBluetoothService = startBluetoothService,
                     pairedDevices = pairedDevices,
-                    launchShareActivity = launchShareActivity,
+
                     refresh = refresh,
                     stopBluetoothService = stopBluetoothService
                 )
@@ -331,7 +331,6 @@ class MainScreenInstrumentedTest {
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
-                launchShareActivity = launchShareActivity,
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService
             )

@@ -102,3 +102,25 @@ fun showReceivedNotification(text: String, context: Context) {
         }
     }
 }
+
+fun sharingResultNotification(title: String, text: String, context: Context) {
+    val notificationId = 10000
+
+    val notification =
+        NotificationCompat.Builder(context, channelId)
+            .setContentTitle(title.toString())
+            .setContentText(text.take(50) + if (text.length > 50) "..." else "")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setAutoCancel(true)
+            .build()
+
+    NotificationManagerCompat.from(context).apply {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            notify(notificationId.toInt(), notification)
+        }
+    }
+}

@@ -51,8 +51,7 @@ fun ActionButtons(
                     }
 
                     ShareClipboardUseCase(context).execute(
-                        bluetoothService = null,
-                        essentialsBluetoothService = Essentials.bluetoothService,
+                        bluetoothService = Essentials.bluetoothService,
                     )
                 }
             },

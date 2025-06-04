@@ -54,6 +54,10 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.test.core)
 
+    implementation(libs.androidx.work.runtime.ktx)
+    testImplementation(libs.androidx.work.testing)
+
+
     // Status Bar
     implementation(libs.accompanist.systemuicontroller)
     // Material Icons

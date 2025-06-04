@@ -1,197 +1,152 @@
 package com.aubynsamuel.clipsync.clipboardshareactivity
 
 /**
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.os.IBinder
-import androidx.lifecycle.Lifecycle
-import androidx.test.core.app.ActivityScenario
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.Configuration
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.aubynsamuel.clipsync.activities.ShareClipboardActivity
-import com.aubynsamuel.clipsync.bluetooth.BluetoothService
-import com.aubynsamuel.clipsync.bluetooth.SharingResult
+import com.aubynsamuel.clipsync.activities.shareclipboard.GetClipTextUseCase
+import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardWorker
 import org.junit.After
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.Mock.Strictness
 import org.mockito.Mockito.*
+import org.mockito.MockitoAnnotations
+import org.robolectric.Robolectric.buildActivity
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows.shadowOf
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
-import org.robolectric.shadows.ShadowToast
+import org.robolectric.shadows.ShadowLooper
+
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
+@Config(sdk = [28])
 class ShareClipboardActivityTest {
 
+// Ensures LiveData / ArchitectureComponents run instantly
+@get:Rule
+val instantTaskExecutorRule = InstantTaskExecutorRule()
+
 private lateinit var context: Context
-private lateinit var mockBluetoothService: BluetoothService
-private lateinit var mockBinder: BluetoothService.LocalBinder
-private lateinit var scenario: ActivityScenario<ShareClipboardActivity>
+private var mocksInitialized = false
 
 @Before
-fun setup() {
+fun setUp() {
+// Set up a test instance of WorkManager (synchronous executor).
 context = ApplicationProvider.getApplicationContext()
-mockBluetoothService = mock(BluetoothService::class.java)
-mockBinder = mock(BluetoothService.LocalBinder::class.java)
-`when`(mockBinder.getService()).thenReturn(mockBluetoothService)
-
-// Intercept service binding
-val shadowApplication = shadowOf(context)
-shadowApplication.setComponentNameAndServiceForBindService(
-Intent(context, BluetoothService::class.java).component,
-object : IBinder {
-override fun queryLocalInterface(descriptor: String): IBinder? {
-return mockBinder
-}
-
-override fun getInterfaceDescriptor(): String? = null
-override fun pingBinder(): Boolean = false
-override fun isBinderAlive(): Boolean = true
-override fun linkToDeath(recipient: IBinder.DeathRecipient, flags: Int) {}
-override fun unlinkToDeath(recipient: IBinder.DeathRecipient, flags: Int): Boolean =
-false
-}
-)
+val config = Configuration.Builder()
+.setMinimumLoggingLevel(Log.VERBOSE)
+.build()
+WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+// Enable Mockito inline mock creation (for mockConstruction & mockStatic)
+MockitoAnnotations.openMocks(this).strictness = Strictness.LENIENT
+mocksInitialized = true
 }
 
 @After
 fun tearDown() {
-if (::scenario.isInitialized) {
-scenario.close()
-}
-ShadowToast.reset()
+// Nothing special to tear down here
 }
 
 @Test
-fun `activity finishes immediately when action is not ACTION_SHARE`() {
-// Given
-val intent = Intent(context, ShareClipboardActivity::class.java)
+fun whenIntentActionNotShare_thenActivityFinishesImmediately() {
+// Build an intent with action other than "ACTION_SHARE"
+val intent = Intent(context, ShareClipboardActivity::class.java).apply {
+action = "SOME_OTHER_ACTION"
+}
 
-// When
-scenario = ActivityScenario.launch(intent)
+// Create the ActivityController and start the activity
+val controller: ActivityController<ShareClipboardActivity> =
+buildActivity(ShareClipboardActivity::class.java, intent)
+val activity = controller.create().start().resume().get()
 
-// Then
-assertTrue(scenario.state == Lifecycle.State.DESTROYED)
+// Since action != "ACTION_SHARE", onCreate() should immediately call finish()
+// Robolectric tracks the "isFinishing()" flag.
+assertTrue(
+"Activity should have been finished immediately when action != ACTION_SHARE",
+activity.isFinishing
+)
 }
 
 @Test
-fun `activity attempts to bind service and handle share action on ACTION_SHARE`() {
-// Given
+fun whenIntentActionShare_thenGetClipTextIsCalledAndWorkIsEnqueued() {
+// 1) Stub GetClipTextUseCase so that its constructor + invoke() returns "TEST_CLIP"
+val constructorMock = mockConstruction(
+GetClipTextUseCase::class.java
+) { mockUseCase, contextMock ->
+// Whenever invoke() is called on this instance, return a known string
+`when`(mockUseCase.invoke()).thenReturn("TEST_CLIP")
+}
+
+// 2) Mock WorkManager.getInstance(...) so we can verify enqueue(...) was called
+val workManagerMock = mock(WorkManager::class.java)
+val workManagerStatic = mockStatic(WorkManager::class.java)
+workManagerStatic.`when`<WorkManager> {
+WorkManager.getInstance(any(Context::class.java))
+}.thenReturn(workManagerMock)
+
+// 3) Build an intent with action = "ACTION_SHARE"
 val intent = Intent(context, ShareClipboardActivity::class.java).apply {
 action = "ACTION_SHARE"
 }
 
-// When
-scenario = ActivityScenario.launch(intent)
+// 4) Create the activity (onCreate will schedule a Handler.postDelayed)
+val controller: ActivityController<ShareClipboardActivity> =
+buildActivity(ShareClipboardActivity::class.java, intent)
+val activity = controller.create().start().resume().visible().get()
 
-// Then
-// Verify that bindService was called
-val shadowApplication = shadowOf(context)
-val boundIntent = shadowApplication.peekNextStartedService()
-assertTrue(boundIntent?.component?.className == BluetoothService::class.java.name)
+// At this point, handleShareAction() has called:
+// Handler(Looper.getMainLooper()).postDelayed({ ... }, 300)
+// We need to run Robolectric's UI thread looper until idle
+ShadowLooper.runUiThreadTasksIncludingDelayedTasks()
 
-// We can't directly verify handleShareAction is called here synchronously
-// as it depends on the service connection. We'll test the sharing logic
-// in a separate test once the service is "connected".
-}
+// 5) Verify GetClipTextUseCase was constructed exactly once
+assertEquals(
+"GetClipTextUseCase constructor should have been invoked exactly once",
+1,
+constructorMock.constructed().size
+)
 
-@Test
-fun `activity shares clipboard content successfully on ACTION_SHARE`() {
-// Given
-val clipboardText = "Test clipboard content"
-val intent = Intent(context, ShareClipboardActivity::class.java).apply {
-action = "ACTION_SHARE"
-}
+// 6) Capture the WorkRequest enqueued
+val requestCaptor = ArgumentCaptor.forClass(OneTimeWorkRequest::class.java)
+verify(workManagerMock, times(1)).enqueue(requestCaptor.capture())
 
-// Mock clipboard
-val clipboardManager =
-context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-val clipData = android.content.ClipData.newPlainText("text", clipboardText)
-clipboardManager.setPrimaryClip(clipData)
+val capturedRequest = requestCaptor.value
+// Assert that the worker class is ShareClipboardWorker
+val workerClassName = capturedRequest.workSpec.workerClassName
+assertEquals(
+"The enqueued WorkRequest should be for ShareClipboardWorker",
+ShareClipboardWorker::class.java.name,
+workerClassName
+)
 
-// Mock BluetoothService to return success
-`when`(mockBluetoothService.shareClipboard(clipboardText)).thenReturn(SharingResult.SUCCESS)
+// Assert that the input data has KEY_CLIP_TEXT = "TEST_CLIP"
+val inputData = capturedRequest.workSpec.input
+assertEquals(
+"InputData.KEY_CLIP_TEXT should match what GetClipTextUseCase.invoke() returned",
+"TEST_CLIP",
+inputData.getString(ShareClipboardWorker.KEY_CLIP_TEXT)
+)
 
-// When
-scenario = ActivityScenario.launch(intent)
-scenario.onActivity { activity ->
-// Simulate service connection
-val serviceIntent = Intent(activity, BluetoothService::class.java)
-activity.onServiceConnected(null, mockBinder)
+// 7) Finally, the activity should finish (isFinishing == true)
+assertTrue(
+"Activity should finish after scheduling the work",
+activity.isFinishing
+)
 
-// Allow the delayed handleShareAction to execute
-Thread.sleep(500) // Wait for the Handler's postDelayed
-
-// Then
-verify(mockBluetoothService).shareClipboard(clipboardText)
-assertTrue(ShadowToast.showedToast("Clipboard shared!"))
-assertTrue(activity.isFinishing)
-}
-}
-
-@Test
-fun `activity shows 'Clipboard is empty' toast when clipboard is empty`() {
-// Given
-val intent = Intent(context, ShareClipboardActivity::class.java).apply {
-action = "ACTION_SHARE"
-}
-
-// Mock an empty clipboard
-val clipboardManager =
-context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-clipboardManager.setPrimaryClip(android.content.ClipData.newPlainText("text", ""))
-
-// When
-scenario = ActivityScenario.launch(intent)
-scenario.onActivity { activity ->
-// Simulate service connection
-val serviceIntent = Intent(activity, BluetoothService::class.java)
-activity.onServiceConnected(null, mockBinder)
-
-// Allow the delayed handleShareAction to execute
-Thread.sleep(500)
-
-// Then
-assertTrue(ShadowToast.showedToast("Clipboard is empty"))
-assertTrue(activity.isFinishing)
-}
-}
-
-@Test
-fun `activity shows 'Sending failed' toast when sharing fails`() {
-// Given
-val clipboardText = "Test clipboard content"
-val intent = Intent(context, ShareClipboardActivity::class.java).apply {
-action = "ACTION_SHARE"
-}
-
-// Mock clipboard
-val clipboardManager =
-context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-val clipData = android.content.ClipData.newPlainText("text", clipboardText)
-clipboardManager.setPrimaryClip(clipData)
-
-// Mock BluetoothService to return a failure
-`when`(mockBluetoothService.shareClipboard(clipboardText)).thenReturn(SharingResult.SENDING_ERROR)
-
-// When
-scenario = ActivityScenario.launch(intent)
-scenario.onActivity { activity ->
-// Simulate service connection
-val serviceIntent = Intent(activity, BluetoothService::class.java)
-activity.onServiceConnected(null, mockBinder)
-
-// Allow the delayed handleShareAction to execute
-Thread.sleep(500)
-
-// Then
-verify(mockBluetoothService).shareClipboard(clipboardText)
-assertTrue(ShadowToast.showedToast("Sending failed"))
-assertTrue(activity.isFinishing)
-}
+// Cleanup static mock
+workManagerStatic.close()
+constructorMock.close()
 }
 }
  */
