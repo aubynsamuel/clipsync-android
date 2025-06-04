@@ -105,13 +105,22 @@ fun showReceivedNotification(text: String, context: Context) {
 
 fun sharingResultNotification(title: String, text: String, context: Context) {
     val notificationId = 1000
+    val contentIntent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val contentPendingIntent = PendingIntent.getActivity(
+        context,
+        0,
+        contentIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
 
     val notification =
         NotificationCompat.Builder(context, channelId)
             .setContentTitle(title.toString())
             .setContentText(text.take(50) + if (text.length > 50) "..." else "")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setAutoCancel(true)
+            .setSmallIcon(android.R.drawable.stat_notify_error)
+            .setAutoCancel(true).setContentIntent(contentPendingIntent)
             .build()
 
     NotificationManagerCompat.from(context).apply {
