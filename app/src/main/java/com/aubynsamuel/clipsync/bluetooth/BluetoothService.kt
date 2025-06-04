@@ -46,6 +46,12 @@ class BluetoothService : Service() {
         fun getService(): BluetoothService = this@BluetoothService
     }
 
+    private fun cancelErrorNotification() {
+        val notificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(1000)
+    }
+
     override fun onCreate() {
         super.onCreate()
         Essentials.serviceStarted = true
@@ -124,9 +130,7 @@ class BluetoothService : Service() {
                 val json = JSONObject(message)
                 val clipText = json.getString("clip")
                 showReceivedNotification(clipText, this)
-                val notificationManager =
-                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.cancel(1000)
+                cancelErrorNotification()
             } catch (e: Exception) {
                 Log.e(tag, "Error parsing JSON", e)
             } finally {
@@ -140,6 +144,7 @@ class BluetoothService : Service() {
     }
 
     suspend fun shareClipboard(text: String): SharingResult {
+        cancelErrorNotification()
         if (selectedDeviceAddresses.isEmpty()) {
             return SharingResult.NO_SELECTED_DEVICES
         }
@@ -191,9 +196,7 @@ class BluetoothService : Service() {
             receiverThread?.interrupt()
             Essentials.serviceStarted = false
             Essentials.bluetoothService = null
-            val notificationManager =
-                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.cancel(1000)
+            cancelErrorNotification()
         } catch (e: IOException) {
             Log.e(tag, "Error closing server socket", e)
         }
