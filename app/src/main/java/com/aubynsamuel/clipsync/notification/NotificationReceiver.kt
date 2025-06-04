@@ -24,6 +24,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
             "ACTION_COPY" -> {
                 val clipText = intent.getStringExtra("CLIP_TEXT") ?: return
+                val notificationId = intent.getIntExtra("NOTIFICATION_ID", 0)
 
                 val clipboardManager =
                     context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -36,7 +37,6 @@ class NotificationReceiver : BroadcastReceiver() {
                 }
 
                 // Dismiss the notification
-                val notificationId = intent.getIntExtra("NOTIFICATION_ID", 0)
                 if (notificationId != 0) {
                     val notificationManager =
                         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

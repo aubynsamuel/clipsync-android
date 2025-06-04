@@ -104,7 +104,7 @@ fun showReceivedNotification(text: String, context: Context) {
 }
 
 fun sharingResultNotification(title: String, text: String, context: Context) {
-    val notificationId = 10000
+    val notificationId = 1000
 
     val notification =
         NotificationCompat.Builder(context, channelId)

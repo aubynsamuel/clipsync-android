@@ -1,8 +1,6 @@
 package com.aubynsamuel.clipsync.activities.shareclipboard
 
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Context.CLIPBOARD_SERVICE
 import android.util.Log
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
 import com.aubynsamuel.clipsync.bluetooth.SharingResult
@@ -13,20 +11,21 @@ import com.aubynsamuel.clipsync.core.tag
 class ShareClipboardUseCase(
     private val context: Context,
 ) {
-    val clipboardManager = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-
     suspend fun execute(bluetoothService: BluetoothService?) {
         try {
             val clipText = GetClipTextUseCase(context).invoke()
 
-            val result =
-                bluetoothService?.shareClipboard(clipText.toString())
-                    ?: SharingResult.SENDING_ERROR
-
-            val message = getSharingResultMessage(result)
-
-            showToast(message, context)
-
+            if (!clipText.isNullOrEmpty()) {
+                val result =
+                    bluetoothService?.shareClipboard(clipText)
+                        ?: SharingResult.SENDING_ERROR
+                val message = getSharingResultMessage(result)
+                showToast(message, context)
+            } else {
+                Log.e(tag, "ShareClipboardWorker: No clip text provided.")
+                showToast("Clipboard is empty", context)
+            }
+            
         } catch (e: Exception) {
             Log.e(tag, "Sending failed, reason: ${e.message}")
             showToast("Sending failed", context)

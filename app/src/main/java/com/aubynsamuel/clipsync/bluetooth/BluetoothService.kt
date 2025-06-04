@@ -1,6 +1,7 @@
 package com.aubynsamuel.clipsync.bluetooth
 
 import android.Manifest
+import android.app.NotificationManager
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -123,6 +124,9 @@ class BluetoothService : Service() {
                 val json = JSONObject(message)
                 val clipText = json.getString("clip")
                 showReceivedNotification(clipText, this)
+                val notificationManager =
+                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.cancel(1000)
             } catch (e: Exception) {
                 Log.e(tag, "Error parsing JSON", e)
             } finally {
@@ -187,6 +191,9 @@ class BluetoothService : Service() {
             receiverThread?.interrupt()
             Essentials.serviceStarted = false
             Essentials.bluetoothService = null
+            val notificationManager =
+                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(1000)
         } catch (e: IOException) {
             Log.e(tag, "Error closing server socket", e)
         }
