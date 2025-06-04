@@ -21,7 +21,7 @@ class ShareClipboardWorker(
 
     override suspend fun doWork(): Result {
         val clipText = inputData.getString(KEY_CLIP_TEXT)
-        if (clipText.isNullOrEmpty() || clipText == "null") {
+        if (clipText.isNullOrEmpty()) {
             Log.e(tag, "ShareClipboardWorker: No clip text provided.")
             sharingResultNotification(
                 "Clipboard Sharing Failed",

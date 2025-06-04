@@ -31,7 +31,7 @@ class ShareClipboardActivity : ComponentActivity() {
                 val clipText = GetClipTextUseCase(this).invoke()
                 Log.d(tag, "ShareClipboardActivity: Clipboard text: $clipText")
                 val inputData = Data.Builder()
-                    .putString(ShareClipboardWorker.KEY_CLIP_TEXT, clipText.toString())
+                    .putString(ShareClipboardWorker.KEY_CLIP_TEXT, clipText)
                     .build()
 
                 val shareWorkRequest = OneTimeWorkRequestBuilder<ShareClipboardWorker>()
