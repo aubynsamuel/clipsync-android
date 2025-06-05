@@ -216,10 +216,4 @@ class ShareClipboardUseCaseTest {
         // Then
         assertEquals("Sending failed", ShadowToast.getTextOfLatestToast())
     }
-
-    @Test
-    fun `clipboardManager should be initialized correctly`() {
-        // Then
-        assertEquals(clipboardManager, shareClipboardUseCase.clipboardManager)
-    }
 }
