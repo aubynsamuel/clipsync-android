@@ -10,7 +10,10 @@ import com.aubynsamuel.clipsync.bluetooth.SharingResult
 import com.aubynsamuel.clipsync.core.getSharingResultMessage
 import com.aubynsamuel.clipsync.core.tag
 import com.aubynsamuel.clipsync.notification.sharingResultNotification
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -19,96 +22,74 @@ class ShareClipboardWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
 
+    lateinit var bluetoothService: BluetoothServiceConnection
+
     override suspend fun doWork(): Result {
         val clipText = inputData.getString(KEY_CLIP_TEXT)
         if (clipText.isNullOrEmpty()) {
             Log.e(tag, "ShareClipboardWorker: No clip text provided.")
             sharingResultNotification(
-                "Clipboard Sharing Failed",
+                "Sharing Failed",
                 "Clipboard is empty",
                 applicationContext
             )
             return Result.failure()
         }
 
-        var bluetoothService: BluetoothService? = null
-        var bound = false
-
-        val connection = BluetoothServiceConnection(
-            onServiceConnected = { service ->
-                bluetoothService = service
-                bound = true
-                Log.d(tag, "ShareClipboardWorker: BluetoothService connected.")
-            },
-            onServiceDisconnected = {
-                bound = false
-                bluetoothService = null
-                Log.d(tag, "ShareClipboardWorker: BluetoothService disconnected.")
-            }
-        )
+        val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         return suspendCancellableCoroutine { continuation ->
-            val intent = Intent(applicationContext, BluetoothService::class.java)
-            val serviceBound =
-                applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-
-            if (!serviceBound) {
-                Log.e(tag, "ShareClipboardWorker: Failed to bind to BluetoothService.")
-                sharingResultNotification(
-                    "Clipboard Sharing Failed",
-                    "Make bluetooth is turned on",
-                    applicationContext
-                )
-                continuation.resume(Result.failure())
-                return@suspendCancellableCoroutine
-            }
-
-            val handler = android.os.Handler(android.os.Looper.getMainLooper())
-            handler.postDelayed({
-                runBlocking {
-                    if (bluetoothService != null) {
+            bluetoothService = BluetoothServiceConnection(
+                onServiceConnected = { service ->
+                    Log.d(tag, "ShareClipboardWorker: BluetoothService connected.")
+                    serviceScope.launch {
                         try {
-                            val result = bluetoothService?.shareClipboard(clipText)
+                            val result = service.shareClipboard(clipText)
                             if (result != SharingResult.SUCCESS) {
                                 val message = getSharingResultMessage(result)
                                 sharingResultNotification(
-                                    "Clipboard Sharing Failed",
+                                    "Sharing Failed",
                                     message,
                                     applicationContext
                                 )
                             }
                             Log.d(tag, "ShareClipboardWorker: Clipboard shared successfully.")
                             continuation.resume(Result.success())
+
                         } catch (e: Exception) {
                             Log.e(
                                 tag,
                                 "ShareClipboardWorker: Error sharing clipboard: ${e.message}"
                             )
                             sharingResultNotification(
-                                "Clipboard Sharing Failed",
+                                "Sharing Failed",
                                 "Make sure the receiving device is ready",
                                 applicationContext
                             )
                             continuation.resume(Result.failure())
                         } finally {
-                            if (bound) {
-                                applicationContext.unbindService(connection)
-                            }
+                            applicationContext.unbindService(bluetoothService)
                         }
-                    } else {
-                        Log.e(
-                            tag,
-                            "ShareClipboardWorker: BluetoothService not available after binding attempt."
-                        )
-                        sharingResultNotification(
-                            "Clipboard Sharing Failed",
-                            "Make bluetooth is turned on",
-                            applicationContext
-                        )
-                        continuation.resume(Result.failure())
                     }
+                },
+                onServiceDisconnected = {
+                    Log.d(tag, "ShareClipboardWorker: BluetoothService disconnected.")
                 }
-            }, 500)
+            )
+            val intent = Intent(applicationContext, BluetoothService::class.java)
+            val serviceBound =
+                applicationContext.bindService(intent, bluetoothService, Context.BIND_AUTO_CREATE)
+
+            if (!serviceBound) {
+                Log.e(tag, "ShareClipboardWorker: Failed to bind to BluetoothService.")
+                sharingResultNotification(
+                    "Sharing Failed",
+                    "Make bluetooth is turned on",
+                    applicationContext
+                )
+                continuation.resume(Result.failure())
+                return@suspendCancellableCoroutine
+            }
         }
     }
 
