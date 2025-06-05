@@ -7,6 +7,8 @@ import com.aubynsamuel.clipsync.bluetooth.SharingResult
 import com.aubynsamuel.clipsync.core.getSharingResultMessage
 import com.aubynsamuel.clipsync.core.showToast
 import com.aubynsamuel.clipsync.core.tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ShareClipboardUseCase(
     private val context: Context,
@@ -16,16 +18,17 @@ class ShareClipboardUseCase(
             val clipText = GetClipTextUseCase(context).invoke()
 
             if (!clipText.isNullOrEmpty()) {
-                val result =
+                val result = withContext(Dispatchers.IO) {
                     bluetoothService?.shareClipboard(clipText)
                         ?: SharingResult.SENDING_ERROR
+                }
                 val message = getSharingResultMessage(result)
                 showToast(message, context)
             } else {
                 Log.e(tag, "ShareClipboardWorker: No clip text provided.")
                 showToast("Clipboard is empty", context)
             }
-            
+
         } catch (e: Exception) {
             Log.e(tag, "Sending failed, reason: ${e.message}")
             showToast("Sending failed", context)
