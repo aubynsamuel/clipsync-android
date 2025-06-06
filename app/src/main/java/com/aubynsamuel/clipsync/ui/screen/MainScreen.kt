@@ -53,7 +53,7 @@ fun MainScreen(
     refresh: () -> Unit,
     stopBluetoothService: () -> Unit,
 ) {
-    var selectedDeviceAddresses by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var selectedDeviceAddresses by remember { mutableStateOf<Set<String>>(addresses.toSet()) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val colorScheme = MaterialTheme.colorScheme
