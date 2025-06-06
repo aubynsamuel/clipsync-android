@@ -7,6 +7,9 @@ import android.content.Context.CLIPBOARD_SERVICE
 class GetClipTextUseCase(private val context: Context) {
     operator fun invoke(): String? {
         val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        return clipboard.primaryClip?.getItemAt(0)?.text.toString()
+        if (clipboard.primaryClip?.itemCount == 0) return null
+        val clipItem = clipboard.primaryClip?.getItemAt(0) ?: return null
+        val clipText = clipItem.text ?: return null
+        return clipText.toString()
     }
 }
