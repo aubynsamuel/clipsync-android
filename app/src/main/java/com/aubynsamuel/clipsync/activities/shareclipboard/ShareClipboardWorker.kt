@@ -55,7 +55,6 @@ class ShareClipboardWorker(
                             }
                             Log.d(tag, "ShareClipboardWorker: Clipboard shared successfully.")
                             continuation.resume(Result.success())
-
                         } catch (e: Exception) {
                             Log.e(
                                 tag,
@@ -76,6 +75,7 @@ class ShareClipboardWorker(
                     Log.d(tag, "ShareClipboardWorker: BluetoothService disconnected.")
                 }
             )
+
             val intent = Intent(applicationContext, BluetoothService::class.java)
             val serviceBound =
                 applicationContext.bindService(intent, bluetoothService, Context.BIND_AUTO_CREATE)

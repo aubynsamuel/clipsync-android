@@ -120,7 +120,8 @@ fun sharingResultNotification(title: String, text: String, context: Context) {
             .setContentTitle(title.toString())
             .setContentText(text.take(50) + if (text.length > 50) "..." else "")
             .setSmallIcon(android.R.drawable.stat_notify_error)
-            .setAutoCancel(true).setContentIntent(contentPendingIntent)
+            .setAutoCancel(true)
+            .setContentIntent(contentPendingIntent)
             .build()
 
     NotificationManagerCompat.from(context).apply {

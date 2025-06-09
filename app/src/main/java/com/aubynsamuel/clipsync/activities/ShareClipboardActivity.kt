@@ -21,7 +21,6 @@ class ShareClipboardActivity : ComponentActivity() {
             "ACTION_SHARE" -> handleShareAction()
 
             else -> finish()
-
         }
     }
 
