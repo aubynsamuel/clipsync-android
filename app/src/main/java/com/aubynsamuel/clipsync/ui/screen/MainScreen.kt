@@ -4,7 +4,6 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,10 +15,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,12 +32,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.navigation.NavHostController
 import com.aubynsamuel.clipsync.core.Essentials
 import com.aubynsamuel.clipsync.core.Essentials.addresses
 import com.aubynsamuel.clipsync.core.Essentials.isDarkMode
@@ -46,17 +51,20 @@ import com.aubynsamuel.clipsync.ui.component.DarkModeToggle
 import com.aubynsamuel.clipsync.ui.component.DeviceItem
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     startBluetoothService: (Set<String>) -> Unit,
     pairedDevices: Set<BluetoothDevice>,
     refresh: () -> Unit,
     stopBluetoothService: () -> Unit,
+    navController: NavHostController,
 ) {
     var selectedDeviceAddresses by remember { mutableStateOf<Set<String>>(addresses.toSet()) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val colorScheme = MaterialTheme.colorScheme
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
@@ -68,22 +76,20 @@ fun MainScreen(
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = colorScheme.background,
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(colorScheme.primary)
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
-                    .padding(top = 25.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            LargeTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors()
+                    .copy(
+                        containerColor = colorScheme.primary,
+                        scrolledContainerColor = colorScheme.primary
+                    ),
+                title = {
                     Text(
                         text = "ClipSync",
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 24.sp,
                         color = colorScheme.onPrimary
                     )
                     AnimatedVisibility(
@@ -96,29 +102,43 @@ fun MainScreen(
                             color = colorScheme.onPrimary, fontWeight = FontWeight.SemiBold
                         )
                     }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(15.dp)
-                ) {
-                    DarkModeToggle(
-                        isDarkMode = isDarkMode,
-                        onToggle = { changeTheme(context) },
-                    )
-                    Icon(
-                        Icons.Default.Refresh,
-                        contentDescription = "Refresh",
-                        tint = colorScheme.onPrimary,
-                        modifier = Modifier
-                            .clickable {
-                                refresh()
-                                showToast("Paired Devices Refreshed", context)
-                            }
-                            .padding(end = 5.dp)
-                            .size(28.dp)
-                    )
-                }
-            }
+                },
+                actions = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(15.dp),
+                        modifier = Modifier.padding(end = 10.dp)
+                    ) {
+                        DarkModeToggle(
+                            isDarkMode = isDarkMode,
+                            onToggle = { changeTheme(context) },
+                        )
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings Button",
+                            tint = colorScheme.onPrimary,
+                            modifier = Modifier
+                                .clickable {
+                                    navController.navigate("SettingsScreen")
+                                }
+                                .size(25.dp)
+                        )
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh",
+                            tint = colorScheme.onPrimary,
+                            modifier = Modifier
+                                .clickable {
+                                    refresh()
+                                    showToast("Paired Devices Refreshed", context)
+                                }
+                                .padding(end = 5.dp)
+                                .size(25.dp)
+                        )
+                    }
+                },
+            )
+
         }
     ) { padding ->
         Column(

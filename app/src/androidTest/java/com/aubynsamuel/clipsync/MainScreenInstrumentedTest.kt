@@ -73,7 +73,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -90,7 +91,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -107,7 +109,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -139,7 +142,8 @@ class MainScreenInstrumentedTest {
                     pairedDevices = pairedDevices,
 
                     refresh = refresh,
-                    stopBluetoothService = stopBluetoothService
+                    stopBluetoothService = stopBluetoothService,
+                    navController = navController
                 )
             }
 
@@ -177,7 +181,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -200,7 +205,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -218,7 +224,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -236,7 +243,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -261,7 +269,8 @@ class MainScreenInstrumentedTest {
                 pairedDevices = emptySet(),
 
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 
@@ -296,7 +305,8 @@ class MainScreenInstrumentedTest {
                     pairedDevices = pairedDevices,
 
                     refresh = refresh,
-                    stopBluetoothService = stopBluetoothService
+                    stopBluetoothService = stopBluetoothService,
+                    navController = navController
                 )
             }
 
@@ -332,7 +342,8 @@ class MainScreenInstrumentedTest {
                 startBluetoothService = startBluetoothService,
                 pairedDevices = emptySet(),
                 refresh = refresh,
-                stopBluetoothService = stopBluetoothService
+                stopBluetoothService = stopBluetoothService,
+                navController = navController
             )
         }
 

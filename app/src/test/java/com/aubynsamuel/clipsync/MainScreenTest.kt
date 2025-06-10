@@ -37,7 +37,8 @@ class MainScreenTest {
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
                 refresh = mockRefresh,
-                stopBluetoothService = mockStopBluetoothService
+                stopBluetoothService = mockStopBluetoothService,
+                navController = navController
             )
         }
 
@@ -54,7 +55,8 @@ class MainScreenTest {
                 pairedDevices = emptyDevices,
 //                launchShareActivity = mockLaunchShareActivity,
                 refresh = mockRefresh,
-                stopBluetoothService = mockStopBluetoothService
+                stopBluetoothService = mockStopBluetoothService,
+                navController = navController
             )
         }
 
@@ -70,7 +72,8 @@ class MainScreenTest {
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
                 refresh = mockRefresh,
-                stopBluetoothService = mockStopBluetoothService
+                stopBluetoothService = mockStopBluetoothService,
+                navController = navController
             )
         }
 
@@ -95,7 +98,8 @@ class MainScreenTest {
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = pairedDevices,
                 refresh = mockRefresh,
-                stopBluetoothService = mockStopBluetoothService
+                stopBluetoothService = mockStopBluetoothService,
+                navController = navController
             )
         }
 
@@ -111,7 +115,8 @@ class MainScreenTest {
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
                 refresh = mockRefresh,
-                stopBluetoothService = mockStopBluetoothService
+                stopBluetoothService = mockStopBluetoothService,
+                navController = navController
             )
         }
 
@@ -129,7 +134,8 @@ class MainScreenTest {
                 startBluetoothService = mockStartBluetoothService,
                 pairedDevices = emptyDevices,
                 refresh = mockRefresh,
-                stopBluetoothService = mockStopBluetoothService
+                stopBluetoothService = mockStopBluetoothService,
+                navController = navController
             )
 
         }

@@ -19,7 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
 import com.aubynsamuel.clipsync.core.Essentials
-import com.aubynsamuel.clipsync.ui.screen.MainScreen
+import com.aubynsamuel.clipsync.ui.navigation.Navigation
 import com.aubynsamuel.clipsync.ui.theme.ClipSyncTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,8 +60,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             com.aubynsamuel.clipsync.core.getTheme(this)
+            com.aubynsamuel.clipsync.core.getAutoCopy(this)
             ClipSyncTheme(darkTheme = Essentials.isDarkMode) {
-                MainScreen(
+                Navigation(
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)
                     },

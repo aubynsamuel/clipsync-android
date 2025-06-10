@@ -8,6 +8,7 @@ import com.aubynsamuel.clipsync.bluetooth.BluetoothService
 object Essentials {
     var serviceStarted by mutableStateOf(false)
     var isDarkMode by mutableStateOf(false)
+    var autoCopy by mutableStateOf(false)
 
     @Volatile
     var addresses: Array<String> = emptyArray()

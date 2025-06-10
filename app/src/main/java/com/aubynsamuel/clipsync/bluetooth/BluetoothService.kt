@@ -16,6 +16,7 @@ import android.os.IBinder
 import android.util.Log
 import com.aubynsamuel.clipsync.core.Essentials
 import com.aubynsamuel.clipsync.core.copyToClipboard
+import com.aubynsamuel.clipsync.core.getAutoCopy
 import com.aubynsamuel.clipsync.notification.createNotificationChannel
 import com.aubynsamuel.clipsync.notification.createServiceNotification
 import com.aubynsamuel.clipsync.notification.showReceivedNotification
@@ -57,6 +58,7 @@ class BluetoothService : Service() {
         super.onCreate()
         Essentials.serviceStarted = true
         Essentials.bluetoothService = this@BluetoothService
+        getAutoCopy(this)
         createNotificationChannel(this)
 
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -130,8 +132,8 @@ class BluetoothService : Service() {
             try {
                 val json = JSONObject(message)
                 val clipText = json.getString("clip")
-                showReceivedNotification(clipText, this)
-                copyToClipboard(clipText, this)
+                if (Essentials.autoCopy) copyToClipboard(clipText, this)
+                else showReceivedNotification(clipText, this)
                 cancelErrorNotification()
             } catch (e: Exception) {
                 Log.e(tag, "Error parsing JSON", e)
