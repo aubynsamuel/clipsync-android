@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavHostController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.aubynsamuel.clipsync.ui.screen.MainScreen
 import org.junit.Rule
@@ -27,6 +28,7 @@ class MainScreenTest {
 
     private val mockRefresh: () -> Unit = mock()
     private val mockStopBluetoothService: () -> Unit = mock()
+    private val navController: NavHostController = mock()
 
     @Test
     fun mainScreen_displaysTitle() {

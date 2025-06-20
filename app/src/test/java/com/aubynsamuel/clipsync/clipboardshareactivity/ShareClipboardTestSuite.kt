@@ -8,7 +8,5 @@ import org.junit.runners.Suite
 @RunWith(Suite::class)
 @Suite.SuiteClasses(
     BluetoothServiceConnectionTest::class,
-    ShareClipboardUseCaseTest::class,
-//    ShareClipboardActivityTest::class,
 )
 class ShareClipboardTestSuite
