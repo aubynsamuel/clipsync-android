@@ -1,9 +1,9 @@
-package com.aubynsamuel.clipsync.clipboardshareactivity
+package com.aubynsamuel.clipsync
 
 import android.content.ComponentName
-import com.aubynsamuel.clipsync.activities.shareclipboard.BluetoothServiceConnection
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
-import junit.framework.TestCase.assertEquals
+import com.aubynsamuel.clipsync.bluetooth.BluetoothServiceConnection
+import junit.framework.TestCase
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -50,8 +50,8 @@ class BluetoothServiceConnectionTest {
         serviceConnection.onServiceConnected(componentName, binder)
 
         // Then
-        assertEquals(true, onServiceConnectedCalled)
-        assertEquals(bluetoothService, connectedService)
+        TestCase.assertEquals(true, onServiceConnectedCalled)
+        TestCase.assertEquals(bluetoothService, connectedService)
     }
 
     @Test
@@ -63,6 +63,6 @@ class BluetoothServiceConnectionTest {
         serviceConnection.onServiceDisconnected(componentName)
 
         // Then
-        assertEquals(true, onServiceDisconnectedCalled)
+        TestCase.assertEquals(true, onServiceDisconnectedCalled)
     }
 }

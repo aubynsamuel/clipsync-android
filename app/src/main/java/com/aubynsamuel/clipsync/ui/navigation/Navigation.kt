@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.aubynsamuel.clipsync.ui.screen.MainScreen
 import com.aubynsamuel.clipsync.ui.screen.SettingsScreen
+import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 
 @Composable
 fun Navigation(
@@ -14,6 +15,9 @@ fun Navigation(
     pairedDevices: Set<BluetoothDevice>,
     refresh: () -> Unit,
     stopBluetoothService: () -> Unit,
+//    isServiceBound: Boolean,
+//    bluetoothService: BluetoothService?,
+    settingsViewModel: SettingsViewModel,
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -26,12 +30,20 @@ fun Navigation(
                 pairedDevices = pairedDevices,
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService,
-                navController = navController
+                navController = navController,
+//                isServiceBound = isServiceBound,
+//                bluetoothService = bluetoothService,
+                settingsViewModel = settingsViewModel
             )
         }
 
         composable("SettingsScreen") {
-            SettingsScreen(navController = navController)
+            SettingsScreen(
+                navController = navController,
+//                bluetoothService = bluetoothService,
+                settingsViewModel = settingsViewModel,
+//                isServiceBound = isServiceBound
+            )
         }
     }
 }

@@ -16,7 +16,6 @@ import android.os.IBinder
 import android.util.Log
 import com.aubynsamuel.clipsync.core.Essentials
 import com.aubynsamuel.clipsync.core.copyToClipboard
-import com.aubynsamuel.clipsync.core.getAutoCopy
 import com.aubynsamuel.clipsync.notification.createNotificationChannel
 import com.aubynsamuel.clipsync.notification.createServiceNotification
 import com.aubynsamuel.clipsync.notification.showReceivedNotification
@@ -32,16 +31,18 @@ import java.io.InputStreamReader
 import java.util.UUID
 
 class BluetoothService : Service() {
-    private val tag = "BluetoothService"
-    private val foregroundNotificationId = 1001
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    companion object {
+        const val FOREGROUND_NOTIFICATION_ID = 1001
+        private const val TAG = "BluetoothService"
+        private val BLE_UUID = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
+    }
 
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var selectedDeviceAddresses = arrayOf<String>()
+    private var autoCopyEnabled = true
     private var serverSocket: BluetoothServerSocket? = null
     private var receiverThread: Thread? = null
-    private val uuid = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
-
     private val binder = LocalBinder()
 
     inner class LocalBinder : Binder() {
@@ -56,20 +57,22 @@ class BluetoothService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Essentials.serviceStarted = true
         Essentials.bluetoothService = this@BluetoothService
-        getAutoCopy(this)
+        Essentials.isServiceBound = true
         createNotificationChannel(this)
 
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
 
-        startForeground(foregroundNotificationId, createServiceNotification(this))
+        startForeground(FOREGROUND_NOTIFICATION_ID, createServiceNotification(this))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.getStringArrayExtra("SELECTED_DEVICES")?.let {
             selectedDeviceAddresses = it
+        }
+        intent?.getBooleanExtra("AUTO_COPY_ENABLED", true)?.let {
+            autoCopyEnabled = it
         }
 
         startBluetoothServer()
@@ -81,9 +84,12 @@ class BluetoothService : Service() {
         return binder
     }
 
-    fun updateSelectedDevices() {
-        selectedDeviceAddresses = Essentials.addresses
-        createServiceNotification(this)
+    fun updateSelectedDevices(selectedDevices: Array<String>) {
+        selectedDeviceAddresses = selectedDevices
+    }
+
+    fun toggleAutoCopy(value: Boolean) {
+        autoCopyEnabled = value
     }
 
     private fun startBluetoothServer() {
@@ -93,13 +99,13 @@ class BluetoothService : Service() {
                     if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)
                         != PackageManager.PERMISSION_GRANTED
                     ) {
-                        Log.e(tag, "Bluetooth connect permission not granted")
+                        Log.e(TAG, "Bluetooth connect permission not granted")
                         return@launch
                     }
                 }
 
                 serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(
-                    "ClipSync", uuid
+                    "ClipSync", BLE_UUID
                 )
 
                 receiverThread = Thread {
@@ -108,7 +114,7 @@ class BluetoothService : Service() {
                             val socket = serverSocket?.accept()
                             socket?.let { handleIncomingConnection(it) }
                         } catch (e: IOException) {
-                            Log.e(tag, "Server socket accept failed", e)
+                            Log.e(TAG, "Server socket accept failed", e)
                             break
                         }
                     }
@@ -116,7 +122,7 @@ class BluetoothService : Service() {
                 receiverThread?.start()
 
             } catch (e: Exception) {
-                Log.e(tag, "Failed to start server", e)
+                Log.e(TAG, "Failed to start server", e)
             }
         }
     }
@@ -127,23 +133,23 @@ class BluetoothService : Service() {
 
             val message = reader.readLine() ?: ""
 
-            Log.d(tag, "Full JSON received (${message.length} chars)")
+            Log.d(TAG, "Full JSON received (${message.length} chars)")
 
             try {
                 val json = JSONObject(message)
                 val clipText = json.getString("clip")
-                if (Essentials.autoCopy) copyToClipboard(clipText, this)
+                if (autoCopyEnabled) copyToClipboard(clipText, this)
                 else showReceivedNotification(clipText, this)
                 cancelErrorNotification()
             } catch (e: Exception) {
-                Log.e(tag, "Error parsing JSON", e)
+                Log.e(TAG, "Error parsing JSON", e)
             } finally {
                 reader.close()
                 socket.close()
             }
 
         } catch (e: IOException) {
-            Log.e(tag, "Error handling connection", e)
+            Log.e(TAG, "Error handling connection", e)
         }
     }
 
@@ -167,12 +173,12 @@ class BluetoothService : Service() {
                 if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)
                     != PackageManager.PERMISSION_GRANTED
                 ) {
-                    Log.e(tag, "Bluetooth connect permission not granted")
+                    Log.e(TAG, "Bluetooth connect permission not granted")
                     return SharingResult.PERMISSION_NOT_GRANTED
                 }
             }
 
-            val socket = device.createRfcommSocketToServiceRecord(uuid)
+            val socket = device.createRfcommSocketToServiceRecord(BLE_UUID)
             socket.connect()
 
             val outputStream = socket.outputStream
@@ -189,7 +195,7 @@ class BluetoothService : Service() {
 
             return SharingResult.SUCCESS
         } catch (e: IOException) {
-            Log.e(tag, "Error sending to device: ${device.address}", e)
+            Log.e(TAG, "Error sending to device: ${device.address}", e)
             return SharingResult.SENDING_ERROR
         }
     }
@@ -198,11 +204,11 @@ class BluetoothService : Service() {
         try {
             serverSocket?.close()
             receiverThread?.interrupt()
-            Essentials.serviceStarted = false
             Essentials.bluetoothService = null
-            cancelErrorNotification()
+            Essentials.isServiceBound = false
+            Essentials.clean()
         } catch (e: IOException) {
-            Log.e(tag, "Error closing server socket", e)
+            Log.e(TAG, "Error closing server socket", e)
         }
     }
 

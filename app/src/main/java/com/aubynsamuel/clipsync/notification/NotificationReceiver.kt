@@ -16,7 +16,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.cancel(1001)
+                notificationManager.cancel(BluetoothService.FOREGROUND_NOTIFICATION_ID)
             }
 
             "ACTION_COPY" -> {

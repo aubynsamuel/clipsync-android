@@ -8,9 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.aubynsamuel.clipsync.activities.shareclipboard.GetClipTextUseCase
-import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardWorker
+import com.aubynsamuel.clipsync.core.getClipText
 import com.aubynsamuel.clipsync.core.tag
+import com.aubynsamuel.clipsync.workManagers.ShareClipboardWorker
 
 class ShareClipboardActivity : ComponentActivity() {
 
@@ -27,7 +27,7 @@ class ShareClipboardActivity : ComponentActivity() {
     private fun handleShareAction() {
         Handler(Looper.getMainLooper()).postDelayed({
             try {
-                val clipText = GetClipTextUseCase(this).invoke()
+                val clipText = getClipText(this)
                 Log.d(tag, "ShareClipboardActivity: Clipboard text: $clipText")
                 val inputData = Data.Builder()
                     .putString(ShareClipboardWorker.KEY_CLIP_TEXT, clipText)

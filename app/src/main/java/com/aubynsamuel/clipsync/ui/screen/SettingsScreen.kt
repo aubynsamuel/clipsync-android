@@ -24,28 +24,45 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.aubynsamuel.clipsync.core.Essentials
-import com.aubynsamuel.clipsync.core.changeTheme
-import com.aubynsamuel.clipsync.core.setAutoCopy
+import com.aubynsamuel.clipsync.core.Essentials.bluetoothService
+import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
 import com.aubynsamuel.clipsync.ui.component.SettingItem
+import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController) {
+fun SettingsScreen(
+    navController: NavHostController,
+//    bluetoothService: BluetoothService?,
+    settingsViewModel: SettingsViewModel,
+//    isServiceBound: Boolean,
+) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val context = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
+    val autoCopy by settingsViewModel.autoCopy.collectAsStateWithLifecycle()
+    val isDarkMode by
+    settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
+
+    LaunchedEffect(autoCopy) {
+        delay(300)
+        if (isServiceBound == true) {
+            bluetoothService?.toggleAutoCopy(autoCopy)
+        }
+    }
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -70,7 +87,7 @@ fun SettingsScreen(navController: NavHostController) {
                     }) {
                         Text(
                             "Reset", color = colorScheme.onPrimary,
-                            fontSize = 16.sp
+                            fontSize = 18.sp
                         )
                     }
                 },
@@ -80,8 +97,8 @@ fun SettingsScreen(navController: NavHostController) {
                         contentDescription = "Back Button",
                         modifier = Modifier
                             .clickable(onClick = { navController.popBackStack() })
-                            .padding(horizontal = 5.dp)
-                            .size(25.dp),
+                            .padding(horizontal = 8.dp)
+                            .size(30.dp),
                         tint = colorScheme.onPrimary,
                     )
                 }
@@ -104,8 +121,8 @@ fun SettingsScreen(navController: NavHostController) {
                     text = { Text("Are you sure you want to reset all settings to default?") },
                     confirmButton = {
                         TextButton(onClick = {
-                            changeTheme(context, false)
-                            setAutoCopy(context, false)
+                            settingsViewModel.resetSettings()
+                            showResetDialog = false
                         }) {
                             Text("Reset", color = colorScheme.error)
                         }
@@ -122,20 +139,22 @@ fun SettingsScreen(navController: NavHostController) {
                 "Auto Copy", "Automatically copy received text", Icons.Default.ContentCopy,
                 actionButton = {
                     Switch(
-                        checked = Essentials.autoCopy,
-                        onCheckedChange = { setAutoCopy(context) },
+                        checked = autoCopy,
+                        onCheckedChange = {
+                            settingsViewModel.toggleAutoCopy()
+                        }
                     )
                 }
             )
 
             SettingItem(
-                "Switch Theme",
+                "Dark Theme",
                 "Toggle between dark and light theme",
-                if (Essentials.isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
                 actionButton = {
                     Switch(
-                        checked = Essentials.isDarkMode,
-                        onCheckedChange = { changeTheme(context) },
+                        checked = isDarkMode,
+                        onCheckedChange = { settingsViewModel.switchTheme() },
                     )
                 }
             )

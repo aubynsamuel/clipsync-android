@@ -1,6 +1,7 @@
 package com.aubynsamuel.clipsync.ui.component
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,11 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.aubynsamuel.clipsync.activities.shareclipboard.ShareClipboardUseCase
-import com.aubynsamuel.clipsync.core.Essentials
-import com.aubynsamuel.clipsync.core.Essentials.serviceStarted
+import com.aubynsamuel.clipsync.activities.ShareClipboardActivity
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -25,34 +23,32 @@ fun ActionButtons(
     selectedDeviceAddresses: Set<String>,
     scope: CoroutineScope,
     context: Context,
+    isServiceBound: Boolean,
 ) {
 
     Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
         Button(
             onClick = {
-                if (serviceStarted)
+                if (isServiceBound)
                     stopBluetoothService()
                 else startBluetoothService(selectedDeviceAddresses)
             },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(100.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (serviceStarted) colorScheme.error else colorScheme.primary,
+                containerColor = if (isServiceBound) colorScheme.error else colorScheme.primary,
                 contentColor = colorScheme.onPrimary
             ),
-        ) { Text(if (serviceStarted) "Stop" else "Start") }
+        ) { Text(if (isServiceBound) "Stop" else "Start") }
 
         Button(
             onClick = {
                 scope.launch {
-                    if (!serviceStarted) {
-                        startBluetoothService(selectedDeviceAddresses)
-                        delay(500)
+                    val intent = Intent(context, ShareClipboardActivity::class.java).apply {
+                        action = "ACTION_SHARE"
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
-
-                    ShareClipboardUseCase(context).execute(
-                        bluetoothService = Essentials.bluetoothService,
-                    )
+                    context.startActivity(intent)
                 }
             },
             modifier = Modifier.weight(1f),
@@ -61,7 +57,7 @@ fun ActionButtons(
                 containerColor = colorScheme.primary,
                 contentColor = colorScheme.onPrimary
             ),
-            enabled = serviceStarted && selectedDeviceAddresses.isNotEmpty()
+            enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty()
         ) { Text("Share") }
     }
 }

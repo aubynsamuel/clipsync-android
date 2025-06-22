@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync.activities.shareclipboard
+package com.aubynsamuel.clipsync.workManagers
 
 import android.content.Context
 import android.content.Intent
@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.bluetooth.BluetoothServiceConnection
 import com.aubynsamuel.clipsync.bluetooth.SharingResult
 import com.aubynsamuel.clipsync.core.getSharingResultMessage
 import com.aubynsamuel.clipsync.core.tag
@@ -22,7 +23,7 @@ class ShareClipboardWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
 
-    lateinit var bluetoothService: BluetoothServiceConnection
+    lateinit var bluetoothServiceConnection: BluetoothServiceConnection
 
     override suspend fun doWork(): Result {
         val clipText = inputData.getString(KEY_CLIP_TEXT)
@@ -39,7 +40,7 @@ class ShareClipboardWorker(
         val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         return suspendCancellableCoroutine { continuation ->
-            bluetoothService = BluetoothServiceConnection(
+            bluetoothServiceConnection = BluetoothServiceConnection(
                 onServiceConnected = { service ->
                     Log.d(tag, "ShareClipboardWorker: BluetoothService connected.")
                     serviceScope.launch {
@@ -67,7 +68,7 @@ class ShareClipboardWorker(
                             )
                             continuation.resume(Result.failure())
                         } finally {
-                            applicationContext.unbindService(bluetoothService)
+                            applicationContext.unbindService(bluetoothServiceConnection)
                         }
                     }
                 },
@@ -78,7 +79,11 @@ class ShareClipboardWorker(
 
             val intent = Intent(applicationContext, BluetoothService::class.java)
             val serviceBound =
-                applicationContext.bindService(intent, bluetoothService, Context.BIND_AUTO_CREATE)
+                applicationContext.bindService(
+                    intent,
+                    bluetoothServiceConnection,
+                    Context.BIND_AUTO_CREATE
+                )
 
             if (!serviceBound) {
                 Log.e(tag, "ShareClipboardWorker: Failed to bind to BluetoothService.")

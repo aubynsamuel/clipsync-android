@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,8 +28,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,16 +40,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.aubynsamuel.clipsync.core.Essentials
 import com.aubynsamuel.clipsync.core.Essentials.addresses
-import com.aubynsamuel.clipsync.core.Essentials.isDarkMode
-import com.aubynsamuel.clipsync.core.Essentials.serviceStarted
-import com.aubynsamuel.clipsync.core.changeTheme
+import com.aubynsamuel.clipsync.core.Essentials.bluetoothService
+import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
 import com.aubynsamuel.clipsync.core.showToast
 import com.aubynsamuel.clipsync.ui.component.ActionButtons
 import com.aubynsamuel.clipsync.ui.component.DarkModeToggle
 import com.aubynsamuel.clipsync.ui.component.DeviceItem
+import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,19 +60,27 @@ fun MainScreen(
     refresh: () -> Unit,
     stopBluetoothService: () -> Unit,
     navController: NavHostController,
+//    isServiceBound: Boolean,
+//    bluetoothService: BluetoothService?,
+    settingsViewModel: SettingsViewModel,
 ) {
-    var selectedDeviceAddresses by remember { mutableStateOf<Set<String>>(addresses.toSet()) }
+    var selectedDeviceAddresses by rememberSaveable {
+        mutableStateOf<Set<String>>(
+            addresses?.toSet()
+                ?: emptySet()
+        )
+    }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val colorScheme = MaterialTheme.colorScheme
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     LaunchedEffect(selectedDeviceAddresses) {
-        delay(300)
         addresses = selectedDeviceAddresses.toTypedArray()
         delay(300)
-        if (serviceStarted) {
-            Essentials.bluetoothService?.updateSelectedDevices()
+        if (isServiceBound == true) {
+            bluetoothService?.updateSelectedDevices(selectedDeviceAddresses.toTypedArray())
         }
     }
 
@@ -87,20 +96,34 @@ fun MainScreen(
                         scrolledContainerColor = colorScheme.primary
                     ),
                 title = {
-                    Text(
-                        text = "ClipSync",
-                        fontWeight = FontWeight.SemiBold,
-                        color = colorScheme.onPrimary
-                    )
-                    AnimatedVisibility(
-                        selectedDeviceAddresses.isNotEmpty(),
-                        modifier = Modifier.padding(horizontal = 10.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = selectedDeviceAddresses.count().toString(),
-                            fontSize = 18.sp,
-                            color = colorScheme.onPrimary, fontWeight = FontWeight.SemiBold
+                            text = "ClipSync",
+                            fontWeight = FontWeight.SemiBold,
+                            color = colorScheme.onPrimary
                         )
+                        AnimatedVisibility(
+                            selectedDeviceAddresses.isNotEmpty(),
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        ) {
+                            Text(
+                                text = "${selectedDeviceAddresses.count()} selected",
+                                fontSize = 18.sp,
+                                color = colorScheme.onPrimary, fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        AnimatedVisibility(selectedDeviceAddresses.isNotEmpty()) {
+                            Icon(
+                                Icons.Default.Cancel,
+                                contentDescription = "Deselect devices",
+                                tint = colorScheme.onError,
+                                modifier = Modifier.clickable {
+                                    selectedDeviceAddresses = emptySet()
+                                }
+                            )
+                        }
                     }
                 },
                 actions = {
@@ -111,7 +134,7 @@ fun MainScreen(
                     ) {
                         DarkModeToggle(
                             isDarkMode = isDarkMode,
-                            onToggle = { changeTheme(context) },
+                            onToggle = { settingsViewModel.switchTheme() },
                         )
                         Icon(
                             Icons.Default.Settings,
@@ -185,7 +208,8 @@ fun MainScreen(
                 stopBluetoothService = stopBluetoothService,
                 selectedDeviceAddresses = selectedDeviceAddresses,
                 scope = scope,
-                context = context
+                context = context,
+                isServiceBound = isServiceBound == true,
             )
         }
     }
