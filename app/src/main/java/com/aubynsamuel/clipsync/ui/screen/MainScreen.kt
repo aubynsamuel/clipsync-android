@@ -243,9 +243,10 @@ fun MainScreen(
                         DeviceItem(
                             onChecked = {
                                 selectedDeviceAddresses =
-                                    if (!isSelected) selectedDeviceAddresses + address
-                                    else selectedDeviceAddresses - address
-                                recentViewModel.addRecent(address)
+                                    if (!isSelected) {
+                                        recentViewModel.addRecent(address)
+                                        selectedDeviceAddresses + address
+                                    } else selectedDeviceAddresses - address
                             },
                             checked = isSelected,
                             name = name,
