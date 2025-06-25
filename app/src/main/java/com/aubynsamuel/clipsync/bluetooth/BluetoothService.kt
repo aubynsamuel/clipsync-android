@@ -130,7 +130,6 @@ class BluetoothService : Service() {
     private fun handleIncomingConnection(socket: BluetoothSocket) {
         try {
             val reader = BufferedReader(InputStreamReader(socket.inputStream))
-
             val message = reader.readLine() ?: ""
 
             Log.d(TAG, "Full JSON received (${message.length} chars)")
@@ -188,7 +187,7 @@ class BluetoothService : Service() {
             }
 
             outputStream.write((json.toString() + "\n").toByteArray())
-            delay(3000)
+            delay(1000)
             outputStream.flush()
             outputStream.close()
             socket.close()

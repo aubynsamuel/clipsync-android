@@ -46,9 +46,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-//    bluetoothService: BluetoothService?,
     settingsViewModel: SettingsViewModel,
-//    isServiceBound: Boolean,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showResetDialog by remember { mutableStateOf(false) }

@@ -31,8 +31,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var autoCopyEnabled: Boolean = false
     private var pairedDevices by mutableStateOf<Set<BluetoothDevice>>(emptySet())
-//    private var bluetoothService: BluetoothService? = null
-//    private var isServiceBound by mutableStateOf(false)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,15 +49,13 @@ class MainActivity : ComponentActivity() {
                     settingsViewModel.isDarkMode.collectAsStateWithLifecycle().value
             ) {
                 Navigation(
-//                    isServiceBound = isServiceBound,
-//                    bluetoothService = bluetoothService,
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)
                     },
                     pairedDevices = pairedDevices,
                     refresh = { getLoadedDevicesList() },
                     stopBluetoothService = { stopBluetoothService() },
-                    settingsViewModel = settingsViewModel
+                    settingsViewModel = settingsViewModel,
                 )
             }
         }
@@ -145,18 +141,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-//    private val bluetoothServiceConnection =
-//        BluetoothServiceConnection(
-//            onServiceConnected = {
-//                bluetoothService = it
-//                isServiceBound = true
-//            },
-//            onServiceDisconnected = {
-//                bluetoothService = null
-//                isServiceBound = false
-//            }
-//        )
-
     private fun startBluetoothService(selectedDeviceAddresses: Set<String>) {
         checkPermissions()
         val serviceIntent = Intent(this, BluetoothService::class.java).apply {
@@ -169,25 +153,10 @@ class MainActivity : ComponentActivity() {
         } else {
             startService(serviceIntent)
         }
-//        bindService(serviceIntent, bluetoothServiceConnection, BIND_AUTO_CREATE)
     }
-
-//    private fun unbindBluetoothService() {
-//        if (isServiceBound) {
-//            unbindService(bluetoothServiceConnection)
-//            isServiceBound = false
-//        }
-//        bluetoothService = null
-//    }
 
     private fun stopBluetoothService() {
-//        unbindBluetoothService()
         val serviceIntent = Intent(this, BluetoothService::class.java)
         stopService(serviceIntent)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        unbindBluetoothService()
     }
 }

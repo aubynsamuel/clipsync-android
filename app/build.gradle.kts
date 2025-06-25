@@ -14,7 +14,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,17 +53,18 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.test.core)
-
-    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.androidx.work.testing)
 
-
+    // Work manager
+    implementation(libs.androidx.work.runtime.ktx)
     // Status Bar
     implementation(libs.accompanist.systemuicontroller)
     // Material Icons
     implementation(libs.androidx.material.icons.extended)
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+    // Material 3 expressive
+    implementation(libs.material3)
 
 
     implementation(libs.androidx.core.ktx)

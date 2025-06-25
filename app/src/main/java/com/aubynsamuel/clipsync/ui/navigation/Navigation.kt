@@ -15,8 +15,6 @@ fun Navigation(
     pairedDevices: Set<BluetoothDevice>,
     refresh: () -> Unit,
     stopBluetoothService: () -> Unit,
-//    isServiceBound: Boolean,
-//    bluetoothService: BluetoothService?,
     settingsViewModel: SettingsViewModel,
 ) {
     val navController = rememberNavController()
@@ -31,8 +29,6 @@ fun Navigation(
                 refresh = refresh,
                 stopBluetoothService = stopBluetoothService,
                 navController = navController,
-//                isServiceBound = isServiceBound,
-//                bluetoothService = bluetoothService,
                 settingsViewModel = settingsViewModel
             )
         }
@@ -40,9 +36,7 @@ fun Navigation(
         composable("SettingsScreen") {
             SettingsScreen(
                 navController = navController,
-//                bluetoothService = bluetoothService,
                 settingsViewModel = settingsViewModel,
-//                isServiceBound = isServiceBound
             )
         }
     }

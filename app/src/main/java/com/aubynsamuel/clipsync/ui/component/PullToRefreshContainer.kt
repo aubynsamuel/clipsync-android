@@ -1,0 +1,54 @@
+package com.aubynsamuel.clipsync.ui.component
+
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.LoadingIndicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun CustomPullToRefreshBox(
+    refresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val refreshState = rememberPullToRefreshState()
+
+    PullToRefreshBox(
+        modifier = modifier,
+        isRefreshing = isRefreshing,
+        state = refreshState,
+        onRefresh = {
+            isRefreshing = true
+            scope.launch {
+                delay(2500)
+                refresh()
+                isRefreshing = false
+            }
+        },
+        indicator = {
+            LoadingIndicator(
+                modifier = Modifier
+                    .align(Alignment.TopCenter),
+                isRefreshing = isRefreshing,
+                state = refreshState
+            )
+        }
+    ) {
+        content()
+    }
+}
+
