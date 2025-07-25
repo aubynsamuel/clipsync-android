@@ -46,7 +46,7 @@ class NotificationReceiverTest {
 
         notificationReceiver = NotificationReceiver()
         context = ApplicationProvider.getApplicationContext()
-        shadowApplication = ShadowApplication.getInstance()
+        shadowApplication = ShadowApplication()
 
         // Mock system services
         shadowApplication.setSystemService(Context.NOTIFICATION_SERVICE, mockNotificationManager)

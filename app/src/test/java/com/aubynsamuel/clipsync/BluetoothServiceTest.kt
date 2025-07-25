@@ -74,7 +74,7 @@ class BluetoothServiceTest {
         context = ApplicationProvider.getApplicationContext<Context>()
 
         // Mock the system services
-        val shadowApplication = ShadowApplication.getInstance()
+        val shadowApplication = ShadowApplication()
         shadowApplication.setSystemService(Context.BLUETOOTH_SERVICE, bluetoothManager)
 
         // Setup mocks
@@ -127,7 +127,7 @@ class BluetoothServiceTest {
     @Test
     fun `shareClipboard returns PERMISSION_NOT_GRANTED when permission is missing`() = runTest {
         // Deny the permission
-        val shadowApplication = ShadowApplication.getInstance()
+        val shadowApplication = ShadowApplication()
         shadowApplication.denyPermissions(Manifest.permission.BLUETOOTH_CONNECT)
 
         service.updateSelectedDevices(arrayOf(testDeviceAddress))

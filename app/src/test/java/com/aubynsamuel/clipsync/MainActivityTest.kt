@@ -56,8 +56,8 @@ class MainActivityTest {
         MockitoAnnotations.openMocks(this)
 
         // Get the real application context from Robolectric
-        context = ApplicationProvider.getApplicationContext<Context>()
-        shadowApplication = ShadowApplication.getInstance()
+        context = ApplicationProvider.getApplicationContext()
+        shadowApplication = ShadowApplication()
 
         // Mock system services
         shadowApplication.setSystemService(Context.BLUETOOTH_SERVICE, mockBluetoothManager)
