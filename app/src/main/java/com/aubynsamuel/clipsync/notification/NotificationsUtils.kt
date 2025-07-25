@@ -119,7 +119,7 @@ fun sharingResultNotification(title: String, text: String, context: Context) {
         NotificationCompat.Builder(context, channelId)
             .setContentTitle(title.toString())
             .setContentText(text.take(50) + if (text.length > 50) "..." else "")
-            .setSmallIcon(android.R.drawable.stat_notify_error)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setAutoCancel(true)
             .setContentIntent(contentPendingIntent)
             .build()

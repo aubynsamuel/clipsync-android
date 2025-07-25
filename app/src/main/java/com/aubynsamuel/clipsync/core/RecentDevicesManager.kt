@@ -3,7 +3,7 @@ package com.aubynsamuel.clipsync.core
 import android.content.Context
 import androidx.core.content.edit
 
-class RecentListManager(context: Context) {
+class RecentDevicesManager(context: Context) {
     private val prefs = context.getSharedPreferences("recent_items", Context.MODE_PRIVATE)
     private val key = "recent_list"
 
@@ -38,17 +38,6 @@ class RecentListManager(context: Context) {
             val toRemove = recentItems.first()
             recentItems.remove(toRemove)
         }
-
         save()
     }
-
-//    fun remove(item: String) {
-//        recentItems.remove(item)
-//        save()
-//    }
-//
-//    fun clear() {
-//        recentItems.clear()
-//        save()
-//    }
 }

@@ -13,7 +13,7 @@ import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 fun Navigation(
     startBluetoothService: (Set<String>) -> Unit,
     pairedDevices: Set<BluetoothDevice>,
-    refresh: () -> Unit,
+    refreshPairedDevices: () -> Unit,
     stopBluetoothService: () -> Unit,
     settingsViewModel: SettingsViewModel,
 ) {
@@ -26,7 +26,7 @@ fun Navigation(
             MainScreen(
                 startBluetoothService = startBluetoothService,
                 pairedDevices = pairedDevices,
-                refresh = refresh,
+                refreshPairedDevices = refreshPairedDevices,
                 stopBluetoothService = stopBluetoothService,
                 navController = navController,
                 settingsViewModel = settingsViewModel

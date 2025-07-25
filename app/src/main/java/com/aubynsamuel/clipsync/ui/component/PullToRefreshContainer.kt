@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CustomPullToRefreshBox(
-    refresh: () -> Unit,
+    refreshPairedDevices: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -35,7 +35,7 @@ fun CustomPullToRefreshBox(
             isRefreshing = true
             scope.launch {
                 delay(2500)
-                refresh()
+                refreshPairedDevices()
                 isRefreshing = false
             }
         },

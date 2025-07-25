@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                         startBluetoothService(selectedDeviceAddresses)
                     },
                     pairedDevices = pairedDevices,
-                    refresh = { getLoadedDevicesList() },
+                    refreshPairedDevices = { getPairedDevicesList() },
                     stopBluetoothService = { stopBluetoothService() },
                     settingsViewModel = settingsViewModel,
                 )
@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            getLoadedDevicesList()
+            getPairedDevicesList()
         } else {
             showToast("Bluetooth is required to find devices.", this)
 //        checkBluetoothEnabled()
@@ -117,12 +117,12 @@ class MainActivity : ComponentActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             requestEnableBluetooth.launch(enableBtIntent)
         } else {
-            getLoadedDevicesList()
+            getPairedDevicesList()
         }
     }
 
     /** Wrapper around loadPairedDevices for MainScreen composable*/
-    fun getLoadedDevicesList() {
+    fun getPairedDevicesList() {
         pairedDevices = loadPairedDevices()
     }
 

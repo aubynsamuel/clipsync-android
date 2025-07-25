@@ -52,13 +52,13 @@ import androidx.navigation.NavHostController
 import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
 import com.aubynsamuel.clipsync.core.Essentials.selectedDeviceAddresses
 import com.aubynsamuel.clipsync.core.Essentials.updateSelectedDevices
-import com.aubynsamuel.clipsync.core.RecentListManager
+import com.aubynsamuel.clipsync.core.RecentDevicesManager
 import com.aubynsamuel.clipsync.ui.component.ActionButtons
 import com.aubynsamuel.clipsync.ui.component.CustomPullToRefreshBox
 import com.aubynsamuel.clipsync.ui.component.DarkModeToggle
 import com.aubynsamuel.clipsync.ui.component.DeviceItem
 import com.aubynsamuel.clipsync.ui.theme.Typography
-import com.aubynsamuel.clipsync.ui.viewModel.RecentViewModel
+import com.aubynsamuel.clipsync.ui.viewModel.RecentDevicesViewModel
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
 
@@ -67,13 +67,14 @@ import kotlinx.coroutines.delay
 fun MainScreen(
     startBluetoothService: (Set<String>) -> Unit,
     pairedDevices: Set<BluetoothDevice>,
-    refresh: () -> Unit,
+    refreshPairedDevices: () -> Unit,
     stopBluetoothService: () -> Unit,
     navController: NavHostController,
     settingsViewModel: SettingsViewModel,
 ) {
     val context = LocalContext.current
-    val recentViewModel: RecentViewModel = viewModel { RecentViewModel(RecentListManager(context)) }
+    val recentDevicesViewModel: RecentDevicesViewModel =
+        viewModel { RecentDevicesViewModel(RecentDevicesManager(context)) }
     var selectedDeviceAddresses by rememberSaveable {
         mutableStateOf<Set<String>>(
             selectedDeviceAddresses.toSet()
@@ -83,7 +84,7 @@ fun MainScreen(
     val colorScheme = MaterialTheme.colorScheme
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
-    val recentDevices by recentViewModel.recentItems.collectAsStateWithLifecycle()
+    val recentDevices by recentDevicesViewModel.recentItems.collectAsStateWithLifecycle()
 
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
@@ -92,7 +93,7 @@ fun MainScreen(
         }
     }
     CustomPullToRefreshBox(
-        refresh = refresh,
+        refreshPairedDevices = refreshPairedDevices,
         modifier = Modifier
     ) {
         Scaffold(
@@ -163,7 +164,7 @@ fun MainScreen(
 //                            tint = colorScheme.onPrimary,
 //                            modifier = Modifier
 //                                .clickable {
-//                                    refresh()
+//                                    refreshPairedDevices()
 ////                                    showToast("Paired Devices Refreshed", context)
 //                                }
 //                                .padding(end = 5.dp)
@@ -242,7 +243,7 @@ fun MainScreen(
                             onChecked = {
                                 selectedDeviceAddresses =
                                     if (!isSelected) {
-                                        recentViewModel.addRecent(address)
+                                        recentDevicesViewModel.addRecentDevice(address)
                                         selectedDeviceAddresses + address
                                     } else selectedDeviceAddresses - address
                             },
