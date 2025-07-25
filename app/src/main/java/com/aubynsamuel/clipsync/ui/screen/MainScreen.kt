@@ -49,9 +49,9 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.aubynsamuel.clipsync.core.Essentials.addresses
-import com.aubynsamuel.clipsync.core.Essentials.bluetoothService
 import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
+import com.aubynsamuel.clipsync.core.Essentials.selectedDeviceAddresses
+import com.aubynsamuel.clipsync.core.Essentials.updateSelectedDevices
 import com.aubynsamuel.clipsync.core.RecentListManager
 import com.aubynsamuel.clipsync.ui.component.ActionButtons
 import com.aubynsamuel.clipsync.ui.component.CustomPullToRefreshBox
@@ -76,8 +76,7 @@ fun MainScreen(
     val recentViewModel: RecentViewModel = viewModel { RecentViewModel(RecentListManager(context)) }
     var selectedDeviceAddresses by rememberSaveable {
         mutableStateOf<Set<String>>(
-            addresses?.toSet()
-                ?: emptySet()
+            selectedDeviceAddresses.toSet()
         )
     }
     val scope = rememberCoroutineScope()
@@ -87,10 +86,9 @@ fun MainScreen(
     val recentDevices by recentViewModel.recentItems.collectAsStateWithLifecycle()
 
     LaunchedEffect(selectedDeviceAddresses) {
-        addresses = selectedDeviceAddresses.toTypedArray()
         delay(300)
-        if (isServiceBound == true) {
-            bluetoothService?.updateSelectedDevices(selectedDeviceAddresses.toTypedArray())
+        if (isServiceBound) {
+            updateSelectedDevices(selectedDeviceAddresses.toTypedArray())
         }
     }
     CustomPullToRefreshBox(
@@ -261,7 +259,7 @@ fun MainScreen(
                     selectedDeviceAddresses = selectedDeviceAddresses,
                     scope = scope,
                     context = context,
-                    isServiceBound = isServiceBound == true,
+                    isServiceBound = isServiceBound,
                 )
             }
         }

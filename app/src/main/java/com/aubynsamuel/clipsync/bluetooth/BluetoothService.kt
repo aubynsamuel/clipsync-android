@@ -57,8 +57,9 @@ class BluetoothService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Essentials.bluetoothService = this@BluetoothService
-        Essentials.isServiceBound = true
+        serviceScope.launch {
+            Essentials.setBluetoothService(this@BluetoothService)
+        }
         createNotificationChannel(this)
 
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -203,9 +204,9 @@ class BluetoothService : Service() {
         try {
             serverSocket?.close()
             receiverThread?.interrupt()
-            Essentials.bluetoothService = null
-            Essentials.isServiceBound = false
-            Essentials.clean()
+            serviceScope.launch {
+                Essentials.clean()
+            }
         } catch (e: IOException) {
             Log.e(TAG, "Error closing server socket", e)
         }

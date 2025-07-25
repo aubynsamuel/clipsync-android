@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.aubynsamuel.clipsync.core.Essentials.bluetoothService
 import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
+import com.aubynsamuel.clipsync.core.Essentials.toggleAutoCopy
 import com.aubynsamuel.clipsync.ui.component.SettingItem
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -56,8 +56,8 @@ fun SettingsScreen(
 
     LaunchedEffect(autoCopy) {
         delay(300)
-        if (isServiceBound == true) {
-            bluetoothService?.toggleAutoCopy(autoCopy)
+        if (isServiceBound) {
+            toggleAutoCopy(autoCopy)
         }
     }
 
