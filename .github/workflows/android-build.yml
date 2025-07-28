@@ -100,8 +100,23 @@ jobs:
           
           echo "Found APK: $APK_FILE"
           
+          # Find the correct build-tools version
+          BUILD_TOOLS_VERSION=$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)
+          APKSIGNER_PATH="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner"
+          
+          echo "Using build-tools version: $BUILD_TOOLS_VERSION"
+          echo "APK signer path: $APKSIGNER_PATH"
+          
+          # Check if apksigner exists
+          if [ ! -f "$APKSIGNER_PATH" ]; then
+            echo "Error: apksigner not found at $APKSIGNER_PATH"
+            echo "Available build-tools versions:"
+            ls -la $ANDROID_HOME/build-tools/
+            exit 1
+          fi
+          
           # Sign the APK
-          $ANDROID_HOME/build-tools/*/apksigner sign \
+          "$APKSIGNER_PATH" sign \
             --ks keystore.jks \
             --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
             --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" \
@@ -110,7 +125,7 @@ jobs:
             "$APK_FILE"
           
           # Verify the signature
-          $ANDROID_HOME/build-tools/*/apksigner verify "${APK_FILE%.apk}-signed.apk"
+          "$APKSIGNER_PATH" verify "${APK_FILE%.apk}-signed.apk"
           
           echo "APK signed and verified successfully"
           
@@ -217,45 +232,21 @@ jobs:
         with:
           name: ClipSync Android ${{ needs.build.outputs.version }}
           body: |
-            # 🎉 Introducing ClipSync Android ${{ needs.build.outputs.version }} 🎉
+            This is very first official release of **ClipSync for Android**! 🚀
 
-            Welcome to the very first official release of **ClipSync for Android**! 🚀
-
-            ClipSync bridges your clipboard between Android and Windows devices—instantly and wirelessly. Copy text on your phone, paste it on your PC, and vice versa. No cloud, no ads, just seamless Bluetooth-powered productivity!
-
-            ## What is ClipSync?
             ClipSync is a privacy-first clipboard sharing app that connects your Android and Windows devices over Bluetooth. Effortlessly share text between your phone and computer with a single tap—perfect for students, professionals, and anyone tired of emailing themselves snippets!
-
-            - 🔄 **Instant clipboard sharing** between Android and Windows
-            - 🔒 **Private & local**: No data ever leaves your devices
-            - 🌙 **Dark & Light themes**
-            - ⚡ **Optimized for speed** with our special benchmarkRelease build
-
-            ## Installation
-
-            1. Download the APK file below
-            2. Enable "Install from unknown sources" in your Android settings
-            3. Install the APK file
-            4. Pair with your Windows device (see README for details)
-
-            ## System Requirements
-            - Android 7.0 (API level 24) or higher
-            - Bluetooth capability (for device synchronization)
-
-            ## Security
-            This APK is signed with our release key for security and authenticity. Your clipboard data stays on your devices—no servers, no snooping.
-
-            ## What's New
-            This is our **first release**! 🎊
+            
+            ### What's New
+            This is our **first official release**! 🎊
             - Android ↔ Windows clipboard sync
             - Bluetooth device discovery & pairing
             - Service-based background listening
             - Theme switching & intuitive UI
-
+            
+            ### Security
+            This APK is signed with our release key for security and authenticity. Your clipboard data stays on your devices—no servers, no snooping.
+            
             For more details, check the [CHANGELOG](CHANGELOG.md).
-
-            ---
-            Thank you for trying ClipSync! If you love it, star the repo and share feedback. Happy syncing!
 
           files: ./apk/*.apk
           draft: false
