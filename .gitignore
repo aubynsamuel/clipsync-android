@@ -15,5 +15,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-# gradlew
-# gradle/wrapper/gradle-wrapper.jar
+keystore_base64.txt
+release-key.jks
+app/benchmarkRelease
