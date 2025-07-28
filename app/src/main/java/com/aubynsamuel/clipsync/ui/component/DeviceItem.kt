@@ -15,7 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun DeviceItem(onChecked: () -> Unit, checked: Boolean, name: String, address: String) {
+fun DeviceItem(
+    onChecked: () -> Unit, checked: Boolean, name: String,
+//    address: String
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

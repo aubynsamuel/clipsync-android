@@ -117,7 +117,7 @@ fun sharingResultNotification(title: String, text: String, context: Context) {
 
     val notification =
         NotificationCompat.Builder(context, channelId)
-            .setContentTitle(title.toString())
+            .setContentTitle(title)
             .setContentText(text.take(50) + if (text.length > 50) "..." else "")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setAutoCancel(true)
@@ -130,7 +130,7 @@ fun sharingResultNotification(title: String, text: String, context: Context) {
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            notify(notificationId.toInt(), notification)
+            notify(notificationId, notification)
         }
     }
 }

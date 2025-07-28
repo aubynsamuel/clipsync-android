@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class SettingsViewModel(private val settingsPrefs: SettingsPreferences) : ViewModel() {
-    private val _isDarkMode = MutableStateFlow<Boolean>(false)
+    private val _isDarkMode = MutableStateFlow(false)
     val isDarkMode: StateFlow<Boolean> = _isDarkMode
 
-    private val _autoCopy = MutableStateFlow<Boolean>(true)
+    private val _autoCopy = MutableStateFlow(true)
     val autoCopy: StateFlow<Boolean> = _autoCopy
 
     init {

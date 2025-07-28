@@ -51,8 +51,7 @@ fun SettingsScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showResetDialog by remember { mutableStateOf(false) }
     val autoCopy by settingsViewModel.autoCopy.collectAsStateWithLifecycle()
-    val isDarkMode by
-    settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
+    val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     LaunchedEffect(autoCopy) {
         delay(300)

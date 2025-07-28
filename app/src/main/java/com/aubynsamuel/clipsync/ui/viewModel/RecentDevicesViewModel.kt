@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class RecentDevicesViewModel(private val manager: RecentDevicesManager) : ViewModel() {
-    private val _recentItems = MutableStateFlow<List<String>>(manager.getAll())
+    private val _recentItems = MutableStateFlow(manager.getAll())
     val recentItems: StateFlow<List<String>> = _recentItems
 
     fun addRecentDevice(item: String) {

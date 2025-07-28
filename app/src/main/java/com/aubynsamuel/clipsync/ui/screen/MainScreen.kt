@@ -218,7 +218,7 @@ fun MainScreen(
                                 },
                                 checked = isSelected,
                                 name = name,
-                                address = address
+//                                address = address
                             )
                         }
                     }
@@ -249,7 +249,7 @@ fun MainScreen(
                             },
                             checked = isSelected,
                             name = name,
-                            address = address
+//                            address = address
                         )
                     }
                 }
