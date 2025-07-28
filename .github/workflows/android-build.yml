@@ -1,0 +1,77 @@
+name: Android Benchmark Build & Release
+
+on:
+  push:
+    branches:
+      - test
+    tags:
+      - 'v*'
+
+jobs:
+  test-release:
+    if: github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    name: Test BenchmarkRelease Build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      - name: Build benchmarkRelease APK
+        run: ./gradlew :app:assembleBenchmarkRelease
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-release-apk
+          path: app/build/outputs/apk/benchmarkRelease/*.apk
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    name: Release BenchmarkRelease APK
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      - name: Build benchmarkRelease APK
+        run: ./gradlew :app:assembleBenchmarkRelease
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-release-apk
+          path: app/build/outputs/apk/benchmarkRelease/*.apk
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/benchmarkRelease/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
