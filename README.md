@@ -55,10 +55,20 @@ another - no internet connection required!
 #### Option 2: Build from Source
 
 ```bash
-git clone https://github.com/aubynsamuel/ClipSync-android.git
-cd ClipSync-android
+git clone https://github.com/aubynsamuel/clipSync-android.git
+cd clipSync-android
 ./gradlew assembleRelease
 ```
+
+---
+
+## 🖥️ Windows Companion App
+
+To sync your clipboard between Android and Windows, you need the ClipSync Windows Companion App:
+
+➡️ [**Download or build it from here**](https://github.com/aubynsamuel/clipsync-windows.git)
+
+Follow the instructions in the Windows app README to set up and pair with your Android device.
 
 ---
 
