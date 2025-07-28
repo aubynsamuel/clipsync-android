@@ -63,68 +63,11 @@ jobs:
 
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v2
-      
-      # For releases, create signed APK; for test builds, create unsigned APK
-      - name: Build signed release APK
-        if: steps.check-release.outputs.is-release == 'true'
+
+      - name: Build Benchmark Release APK
         run: |
-          echo "Building signed release APK..."
+          echo "Building benchmarkRelease APK..."
           ./gradlew :app:assembleBenchmarkRelease
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
-
-      - name: Build unsigned test APK
-        if: steps.check-release.outputs.is-release == 'false'
-        run: |
-          echo "Building unsigned test APK..."
-          ./gradlew :app:assembleBenchmarkRelease
-
-      - name: Setup keystore for signing (Release only)
-        if: steps.check-release.outputs.is-release == 'true'
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
-          echo "Keystore file created"
-
-      - name: Sign APK (Release only)
-        if: steps.check-release.outputs.is-release == 'true'
-        run: |
-          # Find the APK file
-          APK_FILE=$(find app/build/outputs/apk/benchmarkRelease -name "*.apk" | head -1)
-          if [ -z "$APK_FILE" ]; then
-            echo "Error: No APK file found"
-            exit 1
-          fi
-          
-          echo "Found APK: $APK_FILE"
-          
-          # Find the correct build-tools version
-          BUILD_TOOLS_VERSION=$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)
-          APKSIGNER_PATH="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner"
-          
-          echo "Using build-tools version: $BUILD_TOOLS_VERSION"
-          echo "APK signer path: $APKSIGNER_PATH"
-          
-          # Check if apksigner exists
-          if [ ! -f "$APKSIGNER_PATH" ]; then
-            echo "Error: apksigner not found at $APKSIGNER_PATH"
-            echo "Available build-tools versions:"
-            ls -la $ANDROID_HOME/build-tools/
-            exit 1
-          fi
-          
-          # Sign the APK
-          "$APKSIGNER_PATH" sign --ks keystore.jks --ks-key-alias "${{ secrets.KEY_ALIAS }}" --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" --key-pass pass:"${{ secrets.KEY_PASSWORD }}" --out "${APK_FILE%.apk}-signed.apk" "$APK_FILE"
-          
-          # Verify the signature
-          "$APKSIGNER_PATH" verify "${APK_FILE%.apk}-signed.apk"
-          
-          echo "APK signed and verified successfully"
-          
-          # Replace unsigned APK with signed one
-          mv "${APK_FILE%.apk}-signed.apk" "$APK_FILE"
 
       - name: Rename APK with version
         run: |
@@ -135,14 +78,9 @@ jobs:
           fi
           
           APK_DIR=$(dirname "$APK_FILE")
-          APK_NAME=$(basename "$APK_FILE" .apk)
           VERSION="${{ steps.get-version.outputs.version }}"
           
-          if [[ "${{ steps.check-release.outputs.is-release }}" == "true" ]]; then
-            NEW_NAME="ClipSync-Android-${VERSION}-signed.apk"
-          else
-            NEW_NAME="ClipSync-Android-${VERSION}-unsigned.apk"
-          fi
+          NEW_NAME="ClipSync-Android-${VERSION}.apk" 
           
           mv "$APK_FILE" "$APK_DIR/$NEW_NAME"
           echo "APK renamed to: $NEW_NAME"
@@ -163,14 +101,6 @@ jobs:
             fi
           fi
 
-      - name: Cleanup keystore
-        if: always() && steps.check-release.outputs.is-release == 'true'
-        run: |
-          if [ -f keystore.jks ]; then
-            rm -f keystore.jks
-            echo "Keystore file cleaned up"
-          fi
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -183,7 +113,7 @@ jobs:
     if: github.ref == 'refs/heads/test'
     runs-on: ubuntu-latest
     name: Test Release Upload
-    
+
     steps:
       - name: Download APK artifact
         uses: actions/download-artifact@v4
@@ -201,7 +131,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     name: Create GitHub Release
-    
+
     steps:
       - name: Download APK artifact
         uses: actions/download-artifact@v4
@@ -213,13 +143,6 @@ jobs:
         run: |
           echo "Release artifacts:"
           find ./apk -name "*.apk" -exec ls -lh {} \;
-          
-          # Verify we have signed APK for release
-          if ! find ./apk -name "*-signed.apk" | grep -q .; then
-            echo "Warning: No signed APK found for release"
-          else
-            echo "Signed APK found for release"
-          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -236,9 +159,6 @@ jobs:
             - Bluetooth device discovery & pairing
             - Service-based background listening
             - Theme switching & intuitive UI
-            
-            ### Security
-            This APK is signed with our release key for security and authenticity. Your clipboard data stays on your devices—no servers, no snooping.
             
             For more details, check the [CHANGELOG](CHANGELOG.md).
 
