@@ -1,0 +1,265 @@
+name: Android Benchmark Build & Release
+
+on:
+  push:
+    branches:
+      - test
+    tags:
+      - 'v*'
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build APK
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      is-release: ${{ steps.check-release.outputs.is-release }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check if this is a release
+        id: check-release
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "is-release=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-release=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Get version
+        id: get-version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            version="${{ github.ref_name }}"
+            echo "version=$version" >> $GITHUB_OUTPUT
+          else
+            echo "version=test-${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+      
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v2
+      
+      # For releases, create signed APK; for test builds, create unsigned APK
+      - name: Build signed release APK
+        if: steps.check-release.outputs.is-release == 'true'
+        run: |
+          echo "Building signed release APK..."
+          ./gradlew :app:assembleBenchmarkRelease
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+      
+      - name: Build unsigned test APK
+        if: steps.check-release.outputs.is-release == 'false'
+        run: |
+          echo "Building unsigned test APK..."
+          ./gradlew :app:assembleBenchmarkRelease
+      
+      - name: Setup keystore for signing (Release only)
+        if: steps.check-release.outputs.is-release == 'true'
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
+          echo "Keystore file created"
+      
+      - name: Sign APK (Release only)
+        if: steps.check-release.outputs.is-release == 'true'
+        run: |
+          # Find the APK file
+          APK_FILE=$(find app/build/outputs/apk/benchmarkRelease -name "*.apk" | head -1)
+          if [ -z "$APK_FILE" ]; then
+            echo "Error: No APK file found"
+            exit 1
+          fi
+          
+          echo "Found APK: $APK_FILE"
+          
+          # Sign the APK
+          $ANDROID_HOME/build-tools/*/apksigner sign \
+            --ks keystore.jks \
+            --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+            --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" \
+            --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
+            --out "${APK_FILE%.apk}-signed.apk" \
+            "$APK_FILE"
+          
+          # Verify the signature
+          $ANDROID_HOME/build-tools/*/apksigner verify "${APK_FILE%.apk}-signed.apk"
+          
+          echo "APK signed and verified successfully"
+          
+          # Replace unsigned APK with signed one
+          mv "${APK_FILE%.apk}-signed.apk" "$APK_FILE"
+      
+      - name: Rename APK with version
+        run: |
+          APK_FILE=$(find app/build/outputs/apk/benchmarkRelease -name "*.apk" | head -1)
+          if [ -z "$APK_FILE" ]; then
+            echo "Error: No APK file found"
+            exit 1
+          fi
+          
+          APK_DIR=$(dirname "$APK_FILE")
+          APK_NAME=$(basename "$APK_FILE" .apk)
+          VERSION="${{ steps.get-version.outputs.version }}"
+          
+          if [[ "${{ steps.check-release.outputs.is-release }}" == "true" ]]; then
+            NEW_NAME="ClipSync-Android-${VERSION}-signed.apk"
+          else
+            NEW_NAME="ClipSync-Android-${VERSION}-unsigned.apk"
+          fi
+          
+          mv "$APK_FILE" "$APK_DIR/$NEW_NAME"
+          echo "APK renamed to: $NEW_NAME"
+          echo "apk-path=$APK_DIR/$NEW_NAME" >> $GITHUB_OUTPUT
+        id: rename-apk
+      
+      - name: Get APK info
+        run: |
+          APK_FILE=$(find app/build/outputs/apk/benchmarkRelease -name "*.apk" | head -1)
+          if [ -n "$APK_FILE" ]; then
+            echo "APK Size: $(du -h "$APK_FILE" | cut -f1)"
+            echo "APK Path: $APK_FILE"
+            
+            # Get APK details using aapt if available
+            if command -v aapt >/dev/null 2>&1; then
+              echo "APK Package Info:"
+              aapt dump badging "$APK_FILE" | grep -E "package:|application-label:|platformBuildVersionName"
+            fi
+          fi
+      
+      - name: Cleanup keystore
+        if: always() && steps.check-release.outputs.is-release == 'true'
+        run: |
+          if [ -f keystore.jks ]; then
+            rm -f keystore.jks
+            echo "Keystore file cleaned up"
+          fi
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clipsync-android-${{ steps.get-version.outputs.version }}
+          path: app/build/outputs/apk/benchmarkRelease/*.apk
+          retention-days: ${{ steps.check-release.outputs.is-release == 'true' && 90 || 30 }}
+
+  test-release:
+    needs: build
+    if: github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    name: Test Release Upload
+    
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clipsync-android-${{ needs.build.outputs.version }}
+          path: ./apk/
+      
+      - name: List test artifacts
+        run: |
+          echo "Test build artifacts:"
+          find ./apk -name "*.apk" -exec ls -lh {} \;
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    name: Create GitHub Release
+    
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clipsync-android-${{ needs.build.outputs.version }}
+          path: ./apk/
+      
+      - name: Verify release artifacts
+        run: |
+          echo "Release artifacts:"
+          find ./apk -name "*.apk" -exec ls -lh {} \;
+          
+          # Verify we have signed APK for release
+          if ! find ./apk -name "*-signed.apk" | grep -q .; then
+            echo "Warning: No signed APK found for release"
+          else
+            echo "Signed APK found for release"
+          fi
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ClipSync Android ${{ needs.build.outputs.version }}
+          body: |
+            # 🎉 Introducing ClipSync Android ${{ needs.build.outputs.version }} 🎉
+
+            Welcome to the very first official release of **ClipSync for Android**! 🚀
+
+            ClipSync bridges your clipboard between Android and Windows devices—instantly and wirelessly. Copy text on your phone, paste it on your PC, and vice versa. No cloud, no ads, just seamless Bluetooth-powered productivity!
+
+            ## What is ClipSync?
+            ClipSync is a privacy-first clipboard sharing app that connects your Android and Windows devices over Bluetooth. Effortlessly share text between your phone and computer with a single tap—perfect for students, professionals, and anyone tired of emailing themselves snippets!
+
+            - 🔄 **Instant clipboard sharing** between Android and Windows
+            - 🔒 **Private & local**: No data ever leaves your devices
+            - 🌙 **Dark & Light themes**
+            - ⚡ **Optimized for speed** with our special benchmarkRelease build
+
+            ## Installation
+
+            1. Download the APK file below
+            2. Enable "Install from unknown sources" in your Android settings
+            3. Install the APK file
+            4. Pair with your Windows device (see README for details)
+
+            ## System Requirements
+            - Android 7.0 (API level 24) or higher
+            - Bluetooth capability (for device synchronization)
+
+            ## Security
+            This APK is signed with our release key for security and authenticity. Your clipboard data stays on your devices—no servers, no snooping.
+
+            ## What's New
+            This is our **first release**! 🎊
+            - Android ↔ Windows clipboard sync
+            - Bluetooth device discovery & pairing
+            - Service-based background listening
+            - Theme switching & intuitive UI
+
+            For more details, check the [CHANGELOG](CHANGELOG.md).
+
+            ---
+            Thank you for trying ClipSync! If you love it, star the repo and share feedback. Happy syncing!
+
+          files: ./apk/*.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
