@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Check if this is a release
         id: check-release
         run: |
@@ -31,7 +31,7 @@ jobs:
           else
             echo "is-release=false" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Get version
         id: get-version
         run: |
@@ -41,13 +41,13 @@ jobs:
           else
             echo "version=test-${{ github.sha }}" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
-      
+
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -57,10 +57,10 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-${{ runner.os }}-
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      
+
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v2
       
@@ -75,19 +75,19 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
-      
+
       - name: Build unsigned test APK
         if: steps.check-release.outputs.is-release == 'false'
         run: |
           echo "Building unsigned test APK..."
           ./gradlew :app:assembleBenchmarkRelease
-      
+
       - name: Setup keystore for signing (Release only)
         if: steps.check-release.outputs.is-release == 'true'
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
           echo "Keystore file created"
-      
+
       - name: Sign APK (Release only)
         if: steps.check-release.outputs.is-release == 'true'
         run: |
@@ -116,13 +116,7 @@ jobs:
           fi
           
           # Sign the APK
-          "$APKSIGNER_PATH" sign \
-            --ks keystore.jks \
-            --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
-            --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" \
-            --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
-            --out "${APK_FILE%.apk}-signed.apk" \
-            "$APK_FILE"
+          "$APKSIGNER_PATH" sign --ks keystore.jks --ks-key-alias "${{ secrets.KEY_ALIAS }}" --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" --key-pass pass:"${{ secrets.KEY_PASSWORD }}" --out "${APK_FILE%.apk}-signed.apk" "$APK_FILE"
           
           # Verify the signature
           "$APKSIGNER_PATH" verify "${APK_FILE%.apk}-signed.apk"
@@ -131,7 +125,7 @@ jobs:
           
           # Replace unsigned APK with signed one
           mv "${APK_FILE%.apk}-signed.apk" "$APK_FILE"
-      
+
       - name: Rename APK with version
         run: |
           APK_FILE=$(find app/build/outputs/apk/benchmarkRelease -name "*.apk" | head -1)
@@ -154,21 +148,21 @@ jobs:
           echo "APK renamed to: $NEW_NAME"
           echo "apk-path=$APK_DIR/$NEW_NAME" >> $GITHUB_OUTPUT
         id: rename-apk
-      
+
       - name: Get APK info
         run: |
           APK_FILE=$(find app/build/outputs/apk/benchmarkRelease -name "*.apk" | head -1)
           if [ -n "$APK_FILE" ]; then
             echo "APK Size: $(du -h "$APK_FILE" | cut -f1)"
             echo "APK Path: $APK_FILE"
-            
+          
             # Get APK details using aapt if available
             if command -v aapt >/dev/null 2>&1; then
               echo "APK Package Info:"
               aapt dump badging "$APK_FILE" | grep -E "package:|application-label:|platformBuildVersionName"
             fi
           fi
-      
+
       - name: Cleanup keystore
         if: always() && steps.check-release.outputs.is-release == 'true'
         run: |
@@ -176,7 +170,7 @@ jobs:
             rm -f keystore.jks
             echo "Keystore file cleaned up"
           fi
-      
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -196,7 +190,7 @@ jobs:
         with:
           name: clipsync-android-${{ needs.build.outputs.version }}
           path: ./apk/
-      
+
       - name: List test artifacts
         run: |
           echo "Test build artifacts:"
@@ -214,7 +208,7 @@ jobs:
         with:
           name: clipsync-android-${{ needs.build.outputs.version }}
           path: ./apk/
-      
+
       - name: Verify release artifacts
         run: |
           echo "Release artifacts:"
@@ -226,7 +220,7 @@ jobs:
           else
             echo "Signed APK found for release"
           fi
-      
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
