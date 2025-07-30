@@ -1,33 +1,39 @@
 
 <div align="center">
 
+<img src="app/src/main/res/AppIcon.png" alt="ClipSync Logo" width="100">
+
 # ClipSync
 
-<img src="app/src/main/res/AppIcon.png" alt="ClipSync Logo" width="120" height="100">
+**Seamless clipboard sharing between Android and Windows over Bluetooth**.
+Copy on one device, instantly paste on the other — *no internet needed*.
 
-**Share your clipboard instantly across Android and Windows devices via Bluetooth**
-
-[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://android.com)
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://github.com/aubynsamuel/clipSync-android.git)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 </div>
 
----
+### Demo/Screenshots
 
-## 🚀 What is ClipSync?
+<div align="center">
+  <img src="./demo/ClipSync_main_screen_lightmode.webp" width="300" alt="Main Screen in light mode">
+  <img src="./demo/ClipSync_main_screen_darkmode.webp" width="300" alt="Main Screen in dark mode">
+  <!-- <img src="./demo/ClipSync_settings.webp" width="300" alt="Settings Screen"> -->
+</div>
 
-ClipSync is an Android application that enables seamless clipboard sharing between your
-Android and Windows devices using Bluetooth technology. Copy text on one device and instantly access it on
-another - no internet connection required!
+
+<img src="./demo/ClipSync.gif" width="1000" alt="ClipSync Demo">
+
 
 ### ✨ Key Features
 
-- **🔗 Instant Clipboard Sharing**: Copy text on one device, access it immediately on paired devices
-- **📱 Background Operation**: Works silently in the background - no need to keep the app open
-- **🔵 Bluetooth-Based**: Uses secure Bluetooth RFCOMM protocol - no internet required
-- **⚡ Auto-Copy**: Automatically copies received text to your clipboard - can be turned off
-- **🔔 Smart Notifications**: Get notified when new clipboard content arrives - when auto-copy is off
-- **🌙 Dark Mode Support**: Beautiful interface that adapts to your system theme
-- **🔒 Privacy-First**: All data stays between your devices - no cloud storage
+- **Instant Clipboard Sharing**: Copy text on one device, paste on the other
+- **Background Operation**: Works silently in the background - no need to keep the app open
+- **Bluetooth-Based**: Uses secure Bluetooth RFCOMM protocol - no internet required
+- **Auto-Copy**: Automatically copies received text to your clipboard - can be turned off
+- **Smart Notifications**: Get notified when new clipboard content arrives - when auto-copy is off
+- **Dark Mode Support**: Beautiful interface that adapts to your system theme
+- **Privacy-First**: All data stays on your device - no cloud storage
 
 ---
 
@@ -66,7 +72,7 @@ cd clipSync-android
 
 To sync your clipboard between Android and Windows, you need the ClipSync Windows Companion App:
 
-➡️ [**Download or build it from here**](https://github.com/aubynsamuel/clipsync-windows.git)
+➡️ [**Download or build it from here**](https://github.com/aubynsamuel/clipsync-windows.git/releases)
 
 Follow the instructions in the Windows app README to set up and pair with your Android device.
 
@@ -76,7 +82,7 @@ Follow the instructions in the Windows app README to set up and pair with your A
 
 ### First Time Setup
 
-1. **Install ClipSync** on all devices you want to share text with
+1. **Install ClipSync** on all devices you want to share clipboard with
 2. **Enable Bluetooth** on all devices
 3. **Pair your devices** through Android Bluetooth settings
 4. **Open ClipSync** and grant necessary permissions
@@ -87,15 +93,17 @@ Follow the instructions in the Windows app README to set up and pair with your A
 
 1. Open ClipSync
 2. Select the devices you want to share with
-3. Tap "Start Sharing"
-4. The service will run in the background
+3. Tap "Start" to start the service
+4. The service will run in the background displaying a notification with 2 actions (Share and Dismiss)
 
 #### Sharing Clipboard Content
 
-1. Copy any text on your device (long press → Copy)
-2. The text automatically appears on your paired devices
-3. If Auto-Copy is enabled, it's instantly available in the clipboard
-4. If Auto-Copy is disabled, you'll get a notification to manually copy
+1. Copy any text on your device
+2. Pull down the notifications and press the share action button
+
+#### Receiving
+- If Auto-Copy is enabled, it will be instantly available in the clipboard
+- If Auto-Copy is disabled, you'll get a notification to manually copy
 
 #### Managing the Service
 
@@ -117,11 +125,6 @@ Follow the instructions in the Windows app README to set up and pair with your A
 - Choose which paired Bluetooth devices to share clipboard with
 - You can update your selection anytime without restarting the service
 
-### Theme Options
-
-- **Light Mode**: Clean, bright interface
-- **Dark Mode**: Easy on the eyes, battery-friendly
-
 ---
 
 ## 🔒 Privacy & Security
@@ -129,10 +132,10 @@ Follow the instructions in the Windows app README to set up and pair with your A
 ClipSync is designed with privacy in mind:
 
 - **Local Communication**: All data transfers happen directly between your devices via Bluetooth
-- **No Cloud Storage**: Your clipboard content never leaves your devices
+- **No Cloud Storage**: Your data never leaves your devices
 - **No Internet Required**: Works completely offline
-- **Temporary Storage**: Clipboard content is not permanently stored
-- **Secure Protocol**: Uses Bluetooth RFCOMM with built-in security features
+- **No Data Storage**: Clipboard data is never stored
+- **Secure Protocol**: Uses Bluetooth's built-in security features
 
 ### Security Best Practices
 
@@ -145,19 +148,14 @@ ClipSync is designed with privacy in mind:
 
 ### Common Issues
 
-#### Devices Not Connecting
+#### Sending failed
 
 - Ensure both devices have Bluetooth enabled
-- Check that devices are properly paired in Android Bluetooth settings
-- Try unpairing and re-pairing the devices
-- Restart the ClipSync service
-
-#### Clipboard Not Syncing
-
 - Verify the ClipSync service is running (check notification)
 - Ensure both devices have ClipSync installed and running
 - Check that the target device is selected in your device list
-- Try copying different text content
+- Restart the ClipSync service
+- Try unpairing and re-pairing the devices
 
 #### App Permissions
 
@@ -165,7 +163,7 @@ ClipSync is designed with privacy in mind:
 - Check Android Settings → Apps → ClipSync → Permissions
 - Ensure Bluetooth and Notification permissions are enabled
 
-### Still Having Issues?
+#### Still Having Issues?
 
 - Check our [Issues](../../issues) page for known problems
 - Create a new issue with detailed information about your problem
@@ -184,14 +182,6 @@ We welcome contributions! Whether it's bug reports, feature requests, or code co
 3. Make your changes
 4. Submit a pull request
 
-### Development Setup
-
-```bash
-git clone https://github.com/aubynsamuel/clipsync-android.git
-cd ClipSync-android
-./gradlew build
-```
-
 ---
 
 ## 📄 License
@@ -209,8 +199,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-<div align="center">
-  Made with ❤️ for seamless device connectivity
-
-  ⭐ Star this repo if ClipSync helps you!
-</div>
+Made with ❤️ for seamless cross-platform productivity
