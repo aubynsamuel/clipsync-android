@@ -72,7 +72,7 @@ cd clipSync-android
 
 To sync your clipboard between Android and Windows, you need the ClipSync Windows Companion App:
 
-➡️ [**Download or build it from here**](https://github.com/aubynsamuel/clipsync-windows.git/releases)
+➡️ [**Download or build it from here**](https://github.com/aubynsamuel/clipsync-windows/releases)
 
 Follow the instructions in the Windows app README to set up and pair with your Android device.
 
