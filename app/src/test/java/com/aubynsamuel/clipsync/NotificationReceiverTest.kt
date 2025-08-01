@@ -22,6 +22,8 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowApplication
 import org.robolectric.shadows.ShadowToast
@@ -46,7 +48,7 @@ class NotificationReceiverTest {
 
         notificationReceiver = NotificationReceiver()
         context = ApplicationProvider.getApplicationContext()
-        shadowApplication = ShadowApplication()
+        shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
 
         // Mock system services
         shadowApplication.setSystemService(Context.NOTIFICATION_SERVICE, mockNotificationManager)

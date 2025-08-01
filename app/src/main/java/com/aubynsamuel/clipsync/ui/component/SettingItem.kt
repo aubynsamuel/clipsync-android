@@ -1,9 +1,11 @@
 package com.aubynsamuel.clipsync.ui.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,22 +21,26 @@ fun SettingItem(
     title: String,
     subTitle: String,
     icon: ImageVector,
-    actionButton: @Composable (() -> Unit),
+    actionButton: @Composable (() -> Unit) = {},
+    pressAction: () -> Unit = {}
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { pressAction() }
+            .padding(vertical = 10.dp, horizontal = 16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            Icon(imageVector = icon, contentDescription = "")
+            Icon(imageVector = icon, contentDescription = "settingItemIcon")
             Column {
-                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 Text(subTitle, fontSize = 14.sp)
-
             }
         }
         actionButton()

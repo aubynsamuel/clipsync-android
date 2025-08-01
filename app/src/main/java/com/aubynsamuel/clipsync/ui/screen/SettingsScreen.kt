@@ -1,7 +1,6 @@
 package com.aubynsamuel.clipsync.ui.screen
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,15 +12,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Support
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,7 +38,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
 import com.aubynsamuel.clipsync.core.Essentials.toggleAutoCopy
+import com.aubynsamuel.clipsync.ui.component.AppInfoCard
 import com.aubynsamuel.clipsync.ui.component.SettingItem
+import com.aubynsamuel.clipsync.ui.component.StatusBarColor
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
 
@@ -48,7 +50,6 @@ fun SettingsScreen(
     navController: NavHostController,
     settingsViewModel: SettingsViewModel,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showResetDialog by remember { mutableStateOf(false) }
     val autoCopy by settingsViewModel.autoCopy.collectAsStateWithLifecycle()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
@@ -60,30 +61,28 @@ fun SettingsScreen(
         }
     }
 
+    StatusBarColor(!isDarkMode)
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
+            TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors()
                     .copy(
-                        containerColor = colorScheme.primary,
-                        scrolledContainerColor = colorScheme.primary
+                        containerColor = Color.Transparent,
                     ),
                 title = {
                     Text(
                         text = "Settings",
                         fontWeight = FontWeight.SemiBold,
-                        color = colorScheme.onPrimary
+                        color = colorScheme.onPrimaryContainer
                     )
                 },
-                scrollBehavior = scrollBehavior,
                 actions = {
                     TextButton(onClick = {
                         showResetDialog = true
                     }) {
                         Text(
-                            "Reset", color = colorScheme.onPrimary,
+                            "Reset", color = colorScheme.onPrimaryContainer,
                             fontSize = 18.sp
                         )
                     }
@@ -96,7 +95,7 @@ fun SettingsScreen(
                             .clickable(onClick = { navController.popBackStack() })
                             .padding(horizontal = 8.dp)
                             .size(30.dp),
-                        tint = colorScheme.onPrimary,
+                        tint = colorScheme.onPrimaryContainer,
                     )
                 }
             )
@@ -105,11 +104,8 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
-                .padding(top = 10.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             if (showResetDialog) {
                 AlertDialog(
@@ -132,6 +128,8 @@ fun SettingsScreen(
                 )
             }
 
+            AppInfoCard()
+
             SettingItem(
                 "Auto Copy", "Automatically copy received text", Icons.Default.ContentCopy,
                 actionButton = {
@@ -141,7 +139,8 @@ fun SettingsScreen(
                             settingsViewModel.toggleAutoCopy()
                         }
                     )
-                }
+                },
+                pressAction = { settingsViewModel.toggleAutoCopy() }
             )
 
             SettingItem(
@@ -153,7 +152,15 @@ fun SettingsScreen(
                         checked = isDarkMode,
                         onCheckedChange = { settingsViewModel.switchTheme() },
                     )
-                }
+                },
+                pressAction = { settingsViewModel.switchTheme() }
+            )
+
+            SettingItem(
+                "Support",
+                "Get help and view FAQs",
+                Icons.Default.Support,
+                pressAction = { navController.navigate("SupportScreen") }
             )
         }
     }

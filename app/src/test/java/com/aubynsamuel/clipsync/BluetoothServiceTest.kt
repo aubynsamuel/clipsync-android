@@ -16,6 +16,9 @@ import com.aubynsamuel.clipsync.bluetooth.BluetoothService
 import com.aubynsamuel.clipsync.bluetooth.SharingResult
 import com.aubynsamuel.clipsync.core.Essentials
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.json.JSONObject
 import org.junit.After
@@ -33,6 +36,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ServiceController
 import org.robolectric.annotation.Config
@@ -79,9 +83,9 @@ class BluetoothServiceTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
 
-        context = ApplicationProvider.getApplicationContext<Context>()
+        context = ApplicationProvider.getApplicationContext()
 
-        val shadowApplication = shadowOf(context.applicationContext)
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
         shadowApplication.setSystemService(Context.BLUETOOTH_SERVICE, bluetoothManager)
         shadowApplication.setSystemService(Context.NOTIFICATION_SERVICE, notificationManager)
         shadowApplication.setSystemService(Context.CLIPBOARD_SERVICE, clipboardManager)
@@ -97,15 +101,17 @@ class BluetoothServiceTest {
         controller = Robolectric.buildService(BluetoothService::class.java)
         service = controller.create().get()
 
-        Essentials.addresses = arrayOf()
-        Essentials.isServiceBound = false
+        TestScope().launch {
+            Essentials.clean()
+        }
     }
 
     @After
     fun tearDown() {
         controller.destroy()
-        Essentials.addresses = arrayOf()
-        Essentials.isServiceBound = false
+        TestScope().launch {
+            Essentials.clean()
+        }
     }
 
     @Test
@@ -126,7 +132,7 @@ class BluetoothServiceTest {
 
     @Test
     fun `shareClipboard returns PERMISSION_NOT_GRANTED when permission is missing`() = runTest {
-        val shadowApplication = shadowOf(context.applicationContext)
+        val shadowApplication = ShadowApplication()
         shadowApplication.denyPermissions(Manifest.permission.BLUETOOTH_CONNECT)
 
         service.updateSelectedDevices(arrayOf(testDeviceAddress))
@@ -208,8 +214,9 @@ class BluetoothServiceTest {
     }
 
     @Test
-    fun `service sets isServiceBound flag in onCreate`() {
-        Essentials.isServiceBound = false
+    fun `service sets isServiceBound flag in onCreate`() = runTest {
+        Essentials.clean()
+        delay(1000)
 
         val newController = Robolectric.buildService(BluetoothService::class.java)
         newController.create()
@@ -220,8 +227,9 @@ class BluetoothServiceTest {
     }
 
     @Test
-    fun `service sets bluetoothService in Essentials object in onCreate`() {
-        Essentials.bluetoothService = null
+    fun `service sets bluetoothService in Essentials object in onCreate`() = runTest {
+        Essentials.clean()
+        delay(1000)
 
         val newController = Robolectric.buildService(BluetoothService::class.java)
         val newService = newController.create().get()
@@ -238,8 +246,9 @@ class BluetoothServiceTest {
     }
 
     @Test
-    fun `service clears bluetoothService in Essentials object in onDestroy`() {
+    fun `service clears bluetoothService in Essentials object in onDestroy`() = runTest {
         controller.destroy()
+        delay(1000)
         Assert.assertEquals(null, Essentials.bluetoothService)
     }
 }

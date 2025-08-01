@@ -35,6 +35,13 @@ object Essentials {
     val isServiceBound: Boolean
         get() = _isServiceBound
 
+
+    /**
+     * Observable state indicating if the service is currently bound and active
+     */
+    val bluetoothService: BluetoothService?
+        get() = _bluetoothService
+
     /**
      * Currently selected device addresses for clipboard sharing
      */

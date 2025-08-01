@@ -23,14 +23,17 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowApplication
+import org.robolectric.shadows.ShadowBluetoothAdapter
 import org.robolectric.shadows.ShadowToast
 import org.robolectric.util.ReflectionHelpers
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.S])
+@Config(sdk = [Build.VERSION_CODES.S], shadows = [ShadowBluetoothAdapter::class])
 @ExperimentalCoroutinesApi
 class MainActivityTest {
 
@@ -55,9 +58,8 @@ class MainActivityTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
 
-        // Get the real application context from Robolectric
         context = ApplicationProvider.getApplicationContext()
-        shadowApplication = ShadowApplication()
+        shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
 
         // Mock system services
         shadowApplication.setSystemService(Context.BLUETOOTH_SERVICE, mockBluetoothManager)
@@ -114,7 +116,7 @@ class MainActivityTest {
          * No need to call checkPermissions explicitly, it is called in onCreate
          * which is called in setUp
          */
-//        ReflectionHelpers.callInstanceMethod<Any>(activity, "checkPermissions")
+        // ReflectionHelpers.callInstanceMethod<Any>(activity, "checkPermissions")
 
         verify(mockBluetoothAdapter).isEnabled
     }
@@ -363,11 +365,11 @@ class MainActivityTest {
 
     @Test
     fun `activity should handle bluetooth adapter initialization`() {
-        // Given - create a new activity to test initialization
+        // Create a new activity to test initialization
         val newController = Robolectric.buildActivity(MainActivity::class.java)
         val newActivity = newController.create().get()
 
-        // Then - verify activity initialized without crashing
+        // Then - verify activity initialized
         assertTrue(newActivity is MainActivity)
 
         // Clean up

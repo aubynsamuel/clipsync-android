@@ -1,25 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand & core -->
-    <color name="primary">#6366F1</color>
-    <color name="secondary">#3B82F6</color>
-    <color name="accent">#A78BFA</color>
-    <color name="stop_bg">#EF4444</color>
-
-    <!-- Surfaces & backgrounds -->
-    <color name="background">#F5F7FA</color>
-    <color name="surface">#FFFFFF</color>
-
-    <!-- Text / icons -->
-    <color name="on_primary">#FFFFFF</color>
-    <color name="text_dark">#111827</color>
-    <color name="text_medium">#4B5563</color>
-    <color name="text_light">#6B7280</color>
-
-    <!-- Feedback -->
-    <color name="success">#10B981</color>
-    <color name="error">#DC2626</color>
-
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 </resources>

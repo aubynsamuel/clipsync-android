@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -57,12 +56,13 @@ import com.aubynsamuel.clipsync.ui.component.ActionButtons
 import com.aubynsamuel.clipsync.ui.component.CustomPullToRefreshBox
 import com.aubynsamuel.clipsync.ui.component.DarkModeToggle
 import com.aubynsamuel.clipsync.ui.component.DeviceItem
+import com.aubynsamuel.clipsync.ui.component.StatusBarColor
 import com.aubynsamuel.clipsync.ui.theme.Typography
 import com.aubynsamuel.clipsync.ui.viewModel.RecentDevicesViewModel
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     startBluetoothService: (Set<String>) -> Unit,
@@ -85,6 +85,8 @@ fun MainScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
     val recentDevices by recentDevicesViewModel.recentItems.collectAsStateWithLifecycle()
+
+    StatusBarColor(isDarkMode)
 
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
@@ -153,23 +155,11 @@ fun MainScreen(
                                 contentDescription = "Settings Button",
                                 tint = colorScheme.onPrimary,
                                 modifier = Modifier
+                                    .size(25.dp)
                                     .clickable {
                                         navController.navigate("SettingsScreen")
                                     }
-                                    .size(25.dp)
                             )
-//                        Icon(
-//                            Icons.Default.Refresh,
-//                            contentDescription = "Refresh",
-//                            tint = colorScheme.onPrimary,
-//                            modifier = Modifier
-//                                .clickable {
-//                                    refreshPairedDevices()
-////                                    showToast("Paired Devices Refreshed", context)
-//                                }
-//                                .padding(end = 5.dp)
-//                                .size(25.dp)
-//                        )
                         }
                     },
                 )
@@ -199,7 +189,11 @@ fun MainScreen(
 
                     if (recentDevicesList.isNotEmpty()) {
                         item {
-                            SectionHeader(title = "Recent Devices", icon = Icons.Default.Timeline)
+                            SectionHeader(
+                                title = "Recent Devices",
+                                icon = Icons.Default.Timeline,
+                                description = "Recent Devices List"
+                            )
                         }
 
                         items(recentDevicesList) { device ->
@@ -218,7 +212,6 @@ fun MainScreen(
                                 },
                                 checked = isSelected,
                                 name = name,
-//                                address = address
                             )
                         }
                     }
@@ -228,7 +221,11 @@ fun MainScreen(
                     }
 
                     item {
-                        SectionHeader(title = "Paired Devices", icon = Icons.Default.Bluetooth)
+                        SectionHeader(
+                            title = "Paired Devices",
+                            icon = Icons.Default.Bluetooth,
+                            description = "Paired Devices List"
+                        )
                     }
 
                     items(otherDevicesList) { device ->
@@ -249,7 +246,6 @@ fun MainScreen(
                             },
                             checked = isSelected,
                             name = name,
-//                            address = address
                         )
                     }
                 }

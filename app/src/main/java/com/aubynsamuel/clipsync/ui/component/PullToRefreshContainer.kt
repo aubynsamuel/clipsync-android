@@ -1,9 +1,8 @@
 package com.aubynsamuel.clipsync.ui.component
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.LoadingIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,7 +15,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomPullToRefreshBox(
     refreshPairedDevices: () -> Unit,
@@ -34,13 +33,13 @@ fun CustomPullToRefreshBox(
         onRefresh = {
             isRefreshing = true
             scope.launch {
-                delay(2500)
                 refreshPairedDevices()
+                delay(1000)
                 isRefreshing = false
             }
         },
         indicator = {
-            LoadingIndicator(
+            Indicator(
                 modifier = Modifier
                     .align(Alignment.TopCenter),
                 isRefreshing = isRefreshing,

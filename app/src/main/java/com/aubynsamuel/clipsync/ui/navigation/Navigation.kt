@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.aubynsamuel.clipsync.ui.screen.MainScreen
 import com.aubynsamuel.clipsync.ui.screen.SettingsScreen
+import com.aubynsamuel.clipsync.ui.screen.SupportScreen
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 
 @Composable
@@ -35,6 +36,13 @@ fun Navigation(
 
         composable("SettingsScreen") {
             SettingsScreen(
+                navController = navController,
+                settingsViewModel = settingsViewModel,
+            )
+        }
+
+        composable("SupportScreen") {
+            SupportScreen(
                 navController = navController,
                 settingsViewModel = settingsViewModel,
             )
