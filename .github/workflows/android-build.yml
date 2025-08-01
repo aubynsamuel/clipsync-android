@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - test
-    tags:
-      - 'v*'
 
 env:
   JAVA_VERSION: '21'
