@@ -149,18 +149,8 @@ jobs:
         with:
           name: ClipSync Android ${{ needs.build.outputs.version }}
           body: |
-            This is very first official release of **ClipSync for Android**! 🚀
-
-            ClipSync is a privacy-first clipboard sharing app that connects your Android and Windows devices over Bluetooth. Effortlessly share text between your phone and computer with a single tap—perfect for students, professionals, and anyone tired of emailing themselves snippets!
             
-            ### What's New
-            This is our **first official release**! 🎊
-            - Android ↔ Windows clipboard sync
-            - Bluetooth device discovery & pairing
-            - Service-based background listening
-            - Theme switching & intuitive UI
-            
-            For more details, check the [CHANGELOG](CHANGELOG.md).
+            [Full Changelog](https://github.com/aubynsamuel/clipsync-android/compare/v1.0.0...v1.1.0)
 
           files: ./apk/*.apk
           draft: false

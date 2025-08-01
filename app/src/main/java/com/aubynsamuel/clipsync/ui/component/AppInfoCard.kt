@@ -58,7 +58,7 @@ fun AppInfoCard() {
                     color = colorScheme.onPrimaryContainer
                 )
                 Text(
-                    "1.0.0",
+                    "1.1.0",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = colorScheme.onPrimaryContainer
