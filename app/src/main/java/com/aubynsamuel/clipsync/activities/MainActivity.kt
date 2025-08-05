@@ -5,7 +5,10 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -32,12 +35,16 @@ class MainActivity : ComponentActivity() {
     private var autoCopyEnabled: Boolean = false
     private var pairedDevices by mutableStateOf<Set<BluetoothDevice>>(emptySet())
 
+    private var discoveredDevices by mutableStateOf<List<BluetoothDevice>>(emptyList())
+    private var isScanning by mutableStateOf(false)
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
+        registerBluetoothReceiver()
 
         setContent {
             val settingsPrefs = SettingsPreferences(this)
@@ -56,10 +63,97 @@ class MainActivity : ComponentActivity() {
                     refreshPairedDevices = { getPairedDevicesList() },
                     stopBluetoothService = { stopBluetoothService() },
                     settingsViewModel = settingsViewModel,
+                    discoveredDevices = discoveredDevices,
+                    isScanning = isScanning,
+                    bluetoothEnabled = bluetoothAdapter.isEnabled,
+                    onStartScan = { startBluetoothScan() },
+                    onPairDevice = { device -> pairBluetoothDevice(device) },
                 )
             }
         }
         checkPermissions()
+    }
+
+    private val bluetoothReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                BluetoothDevice.ACTION_FOUND -> {
+                    val device: BluetoothDevice? =
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    device?.let {
+                        if (!discoveredDevices.contains(it)) {
+                            discoveredDevices = discoveredDevices + it
+                        }
+                    }
+                }
+
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                    isScanning = false
+                }
+            }
+        }
+    }
+
+    private fun registerBluetoothReceiver() {
+        val filter = IntentFilter().apply {
+            addAction(BluetoothDevice.ACTION_FOUND)
+            addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+        }
+        registerReceiver(bluetoothReceiver, filter)
+    }
+
+    private fun unregisterBluetoothReceiver() {
+        try {
+            unregisterReceiver(bluetoothReceiver)
+        } catch (_: Exception) {
+            // Receiver not registered
+        }
+    }
+
+    private fun startBluetoothScan() {
+        if (!bluetoothAdapter.isEnabled) {
+            checkBluetoothEnabled()
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    Manifest.permission.BLUETOOTH_SCAN
+                else
+                    Manifest.permission.BLUETOOTH_ADMIN
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            checkPermissions()
+            return
+        }
+
+        discoveredDevices = emptyList()
+        if (bluetoothAdapter.isDiscovering) {
+            bluetoothAdapter.cancelDiscovery()
+        }
+        bluetoothAdapter.startDiscovery()
+        isScanning = true
+    }
+
+    private fun pairBluetoothDevice(device: BluetoothDevice) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    Manifest.permission.BLUETOOTH_CONNECT
+                else
+                    Manifest.permission.BLUETOOTH
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            checkPermissions()
+            return
+        }
+
+        val success = device.createBond()
+        if (success) {
+            showToast("Pairing with ${device.name ?: "device"}...", this)
+        } else {
+            showToast("Failed to pair with ${device.name ?: "device"}", this)
+        }
     }
 
     private val requestEnableBluetooth = registerForActivityResult(
@@ -69,7 +163,6 @@ class MainActivity : ComponentActivity() {
             getPairedDevicesList()
         } else {
             showToast("Bluetooth is required to find devices.", this)
-//        checkBluetoothEnabled()
         }
     }
 
@@ -80,8 +173,7 @@ class MainActivity : ComponentActivity() {
         if (allGranted) {
             checkBluetoothEnabled()
         } else {
-            showToast("Permissions needed to start sharing", this)
-//            checkPermissions()
+            showToast("Needed permissions denied.", this)
         }
     }
 
@@ -92,12 +184,14 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.BLUETOOTH_ADVERTISE,
-                Manifest.permission.POST_NOTIFICATIONS
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.ACCESS_FINE_LOCATION
             )
         } else {
             arrayOf(
                 Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN
+                Manifest.permission.BLUETOOTH_ADMIN,
+                Manifest.permission.ACCESS_FINE_LOCATION
             )
         }
 
@@ -158,5 +252,22 @@ class MainActivity : ComponentActivity() {
     private fun stopBluetoothService() {
         val serviceIntent = Intent(this, BluetoothService::class.java)
         stopService(serviceIntent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterBluetoothReceiver()
+        if (bluetoothAdapter.isDiscovering) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        Manifest.permission.BLUETOOTH_SCAN
+                    else
+                        Manifest.permission.BLUETOOTH_ADMIN
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                bluetoothAdapter.cancelDiscovery()
+            }
+        }
     }
 }

@@ -56,7 +56,6 @@ import com.aubynsamuel.clipsync.ui.component.ActionButtons
 import com.aubynsamuel.clipsync.ui.component.CustomPullToRefreshBox
 import com.aubynsamuel.clipsync.ui.component.DarkModeToggle
 import com.aubynsamuel.clipsync.ui.component.DeviceItem
-import com.aubynsamuel.clipsync.ui.component.StatusBarColor
 import com.aubynsamuel.clipsync.ui.theme.Typography
 import com.aubynsamuel.clipsync.ui.viewModel.RecentDevicesViewModel
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
@@ -86,8 +85,6 @@ fun MainScreen(
     val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
     val recentDevices by recentDevicesViewModel.recentItems.collectAsStateWithLifecycle()
 
-    StatusBarColor(isDarkMode)
-
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
         if (isServiceBound) {
@@ -106,8 +103,8 @@ fun MainScreen(
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors()
                         .copy(
-                            containerColor = colorScheme.primary,
-                            scrolledContainerColor = colorScheme.primary
+                            containerColor = colorScheme.primaryContainer,
+                            scrolledContainerColor = colorScheme.primaryContainer
                         ),
                     title = {
                         Row(
@@ -116,7 +113,7 @@ fun MainScreen(
                             Text(
                                 text = "ClipSync",
                                 fontWeight = FontWeight.SemiBold,
-                                color = colorScheme.onPrimary
+                                color = colorScheme.onPrimaryContainer
                             )
                             AnimatedVisibility(
                                 selectedDeviceAddresses.isNotEmpty(),
@@ -125,14 +122,15 @@ fun MainScreen(
                                 Text(
                                     text = "${selectedDeviceAddresses.count()} selected",
                                     fontSize = 18.sp,
-                                    color = colorScheme.onPrimary, fontWeight = FontWeight.SemiBold
+                                    color = colorScheme.onPrimaryContainer,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                             AnimatedVisibility(selectedDeviceAddresses.isNotEmpty()) {
                                 Icon(
                                     Icons.Default.Cancel,
                                     contentDescription = "Deselect devices",
-                                    tint = colorScheme.onError,
+                                    tint = colorScheme.error,
                                     modifier = Modifier.clickable {
                                         selectedDeviceAddresses = emptySet()
                                     }
@@ -146,14 +144,25 @@ fun MainScreen(
                             horizontalArrangement = Arrangement.spacedBy(15.dp),
                             modifier = Modifier.padding(end = 10.dp)
                         ) {
+//                            Text(
+//                                "Scan",
+//                                color = colorScheme.onPrimaryContainer,
+//                                fontWeight = FontWeight.Bold,
+//                                fontSize = 17.sp,
+//                                modifier = Modifier.clickable {
+//                                    navController.navigate("BluetoothScannerScreen")
+//                                }
+//                            )
+
                             DarkModeToggle(
                                 isDarkMode = isDarkMode,
                                 onToggle = { settingsViewModel.switchTheme() },
                             )
+
                             Icon(
                                 Icons.Default.Settings,
                                 contentDescription = "Settings Button",
-                                tint = colorScheme.onPrimary,
+                                tint = colorScheme.onPrimaryContainer,
                                 modifier = Modifier
                                     .size(25.dp)
                                     .clickable {

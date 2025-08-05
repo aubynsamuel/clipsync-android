@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Clip Sync</string>
     <string name="support_url">https://github.com/aubynsamuel/clipsync-android/issues</string>
+    <string name="windows_companion_app">https://github.com/aubynsamuel/clipsync-windows/releases</string>
 
     <string name="buy_me_a_coffee">https://www.buymeacoffee.com/aubynsamuel</string>
     <string name="sourceCode">https://github.com/aubynsamuel/clipsync-android</string>

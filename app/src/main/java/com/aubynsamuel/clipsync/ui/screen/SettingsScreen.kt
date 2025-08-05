@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
@@ -40,7 +41,7 @@ import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
 import com.aubynsamuel.clipsync.core.Essentials.toggleAutoCopy
 import com.aubynsamuel.clipsync.ui.component.AppInfoCard
 import com.aubynsamuel.clipsync.ui.component.SettingItem
-import com.aubynsamuel.clipsync.ui.component.StatusBarColor
+import com.aubynsamuel.clipsync.ui.component.WindowsCompanionCard
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
 
@@ -60,8 +61,6 @@ fun SettingsScreen(
             toggleAutoCopy(autoCopy)
         }
     }
-
-    StatusBarColor(!isDarkMode)
 
     Scaffold(
         topBar = {
@@ -94,7 +93,7 @@ fun SettingsScreen(
                         modifier = Modifier
                             .clickable(onClick = { navController.popBackStack() })
                             .padding(horizontal = 8.dp)
-                            .size(30.dp),
+                            .size(25.dp),
                         tint = colorScheme.onPrimaryContainer,
                     )
                 }
@@ -129,6 +128,7 @@ fun SettingsScreen(
             }
 
             AppInfoCard()
+            WindowsCompanionCard()
 
             SettingItem(
                 "Auto Copy", "Automatically copy received text", Icons.Default.ContentCopy,
@@ -161,6 +161,13 @@ fun SettingsScreen(
                 "Get help and view FAQs",
                 Icons.Default.Support,
                 pressAction = { navController.navigate("SupportScreen") }
+            )
+
+            SettingItem(
+                "Scan",
+                "Pair new devices",
+                Icons.AutoMirrored.Filled.BluetoothSearching,
+                pressAction = { navController.navigate("BluetoothScannerScreen") }
             )
         }
     }

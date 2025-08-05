@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aubynsamuel.clipsync.activities.ShareClipboardActivity
 import kotlinx.coroutines.CoroutineScope
@@ -36,10 +37,10 @@ fun ActionButtons(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(100.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isServiceBound) colorScheme.error else colorScheme.primary,
-                contentColor = colorScheme.onPrimary
+                containerColor = if (isServiceBound) colorScheme.error else colorScheme.primaryContainer,
+                contentColor = if (isServiceBound) colorScheme.onError else colorScheme.onPrimaryContainer
             ),
-        ) { Text(if (isServiceBound) "Stop" else "Start") }
+        ) { Text(if (isServiceBound) "Stop" else "Start", fontWeight = FontWeight.Bold) }
 
         Button(
             onClick = {
@@ -54,10 +55,10 @@ fun ActionButtons(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(100.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = colorScheme.primary,
-                contentColor = colorScheme.onPrimary
+                containerColor = colorScheme.primaryContainer,
+                contentColor = colorScheme.onPrimaryContainer
             ),
             enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty()
-        ) { Text("Share") }
+        ) { Text("Share", fontWeight = FontWeight.Bold) }
     }
 }

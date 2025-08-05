@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.aubynsamuel.clipsync.ui.screen.BluetoothScannerScreen
 import com.aubynsamuel.clipsync.ui.screen.MainScreen
 import com.aubynsamuel.clipsync.ui.screen.SettingsScreen
 import com.aubynsamuel.clipsync.ui.screen.SupportScreen
@@ -17,6 +18,11 @@ fun Navigation(
     refreshPairedDevices: () -> Unit,
     stopBluetoothService: () -> Unit,
     settingsViewModel: SettingsViewModel,
+    discoveredDevices: List<BluetoothDevice>,
+    isScanning: Boolean,
+    bluetoothEnabled: Boolean,
+    onStartScan: () -> Unit,
+    onPairDevice: (BluetoothDevice) -> Unit,
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -44,7 +50,17 @@ fun Navigation(
         composable("SupportScreen") {
             SupportScreen(
                 navController = navController,
-                settingsViewModel = settingsViewModel,
+            )
+        }
+
+        composable("BluetoothScannerScreen") {
+            BluetoothScannerScreen(
+                navController = navController,
+                discoveredDevices = discoveredDevices,
+                isScanning = isScanning,
+                bluetoothEnabled = bluetoothEnabled,
+                onStartScan = onStartScan,
+                onPairDevice = onPairDevice,
             )
         }
     }
