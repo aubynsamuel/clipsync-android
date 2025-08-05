@@ -240,8 +240,9 @@ class BluetoothServiceTest {
     }
 
     @Test
-    fun `service clears isServiceBound flag in onDestroy`() {
+    fun `service clears isServiceBound flag in onDestroy`() = runTest {
         controller.destroy()
+        delay(1000)
         Assert.assertEquals(false, Essentials.isServiceBound)
     }
 

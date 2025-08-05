@@ -27,32 +27,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.aubynsamuel.clipsync.R.string
 import com.aubynsamuel.clipsync.ui.component.SettingItem
-import com.aubynsamuel.clipsync.ui.component.StatusBarColor
-import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SupportScreen(
     navController: NavHostController,
-    settingsViewModel: SettingsViewModel,
 ) {
     val uriHandler = LocalUriHandler.current
-    val isDarkMode by settingsViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     val supportUrl = stringResource(string.support_url)
-
-    StatusBarColor(!isDarkMode)
 
     Scaffold(
         topBar = {

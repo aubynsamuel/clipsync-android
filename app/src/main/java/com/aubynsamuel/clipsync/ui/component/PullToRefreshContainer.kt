@@ -1,6 +1,7 @@
 package com.aubynsamuel.clipsync.ui.component
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -43,7 +44,9 @@ fun CustomPullToRefreshBox(
                 modifier = Modifier
                     .align(Alignment.TopCenter),
                 isRefreshing = isRefreshing,
-                state = refreshState
+                state = refreshState,
+                containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MaterialTheme.colorScheme.primaryContainer
             )
         }
     ) {
