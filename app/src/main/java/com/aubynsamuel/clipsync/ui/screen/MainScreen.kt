@@ -87,9 +87,7 @@ fun MainScreen(
 
     LaunchedEffect(selectedDeviceAddresses) {
         delay(300)
-        if (isServiceBound) {
-            updateSelectedDevices(selectedDeviceAddresses.toTypedArray())
-        }
+        updateSelectedDevices(selectedDeviceAddresses.toTypedArray())
     }
     CustomPullToRefreshBox(
         refreshPairedDevices = refreshPairedDevices,

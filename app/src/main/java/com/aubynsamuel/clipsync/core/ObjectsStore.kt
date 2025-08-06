@@ -64,7 +64,8 @@ object Essentials {
     suspend fun updateSelectedDevices(addresses: Array<String>) {
         mutex.withLock {
             _selectedDeviceAddresses = addresses.copyOf()
-            _bluetoothService?.updateSelectedDevices(addresses)
+            if (isServiceBound)
+                _bluetoothService?.updateSelectedDevices(addresses)
         }
     }
 

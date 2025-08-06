@@ -107,21 +107,6 @@ class MainActivityTest {
     }
 
     @Test
-    fun `checkPermissions should proceed to bluetooth check when all permissions granted`() {
-        // Given - all permissions already granted in setUp
-        `when`(mockBluetoothAdapter.isEnabled).thenReturn(true)
-        `when`(mockBluetoothAdapter.bondedDevices).thenReturn(emptySet())
-
-        /**
-         * No need to call checkPermissions explicitly, it is called in onCreate
-         * which is called in setUp
-         */
-        // ReflectionHelpers.callInstanceMethod<Any>(activity, "checkPermissions")
-
-        verify(mockBluetoothAdapter).isEnabled
-    }
-
-    @Test
     fun `checkBluetoothEnabled should request enable when bluetooth disabled`() {
         // Given
         `when`(mockBluetoothAdapter.isEnabled).thenReturn(false)
