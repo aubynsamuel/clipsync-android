@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aubynsamuel.clipsync.BuildConfig
 import com.aubynsamuel.clipsync.R
 
 @Composable
@@ -58,7 +59,7 @@ fun AppInfoCard() {
                     color = colorScheme.onPrimaryContainer
                 )
                 Text(
-                    "1.1.0",
+                    BuildConfig.VERSION_NAME,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = colorScheme.onPrimaryContainer
