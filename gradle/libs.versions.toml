@@ -22,7 +22,7 @@ uiTestJunit4Android = "1.8.3"
 compose-ui = "1.8.3"
 workVersion = "2.10.3"
 navigationCompose = "2.9.3"
-material3 = "1.4.0-beta01"
+material3 = "1.5.0-alpha01"
 
 [libraries]
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -42,7 +42,7 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-ui" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose-ui" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
@@ -53,7 +53,6 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidx-test-core" }
 androidx-ui-test-junit4-android = { group = "androidx.compose.ui", name = "ui-test-junit4-android", version.ref = "uiTestJunit4Android" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 
 
 [plugins]
