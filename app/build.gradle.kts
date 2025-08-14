@@ -43,6 +43,7 @@ android {
     kotlin {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
+            freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
         }
     }
     buildFeatures {
@@ -68,6 +69,12 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+    // For AppWidgets support
+    implementation(libs.androidx.glance.appwidget)
+    // For interop APIs with Material 3
+    implementation(libs.androidx.glance.material3)
+    // For interop APIs with Material 2
+    implementation(libs.androidx.glance.material)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
