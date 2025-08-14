@@ -64,6 +64,18 @@
         <receiver
                 android:name=".notification.NotificationReceiver"
                 android:exported="false" />
+
+        <receiver
+                android:name=".widget.ClipSyncWidgetReceiver"
+                android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.appwidget.provider"
+                    android:resource="@xml/clip_sync_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

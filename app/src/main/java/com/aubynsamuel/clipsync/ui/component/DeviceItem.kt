@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DeviceItem(
     onChecked: () -> Unit, checked: Boolean, name: String,
-//    address: String
 ) {
     Row(
         modifier = Modifier
@@ -36,11 +35,6 @@ fun DeviceItem(
             verticalArrangement = Arrangement.Center
         ) {
             Text(text = name, color = colorScheme.onBackground)
-//            Text(
-//                text = address,
-//                style = MaterialTheme.typography.bodySmall,
-//                color = colorScheme.onSurface
-//            )
         }
     }
 }
