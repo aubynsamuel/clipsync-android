@@ -45,7 +45,7 @@ fun WidgetContent(
     pairedDevices: Set<BluetoothDevice>,
     stopBluetoothService: () -> Unit,
     startBluetoothService: (Set<String>) -> Unit,
-//    bluetoothEnabled: Boolean
+    bluetoothEnabled: Boolean
 ) {
     var selectedDeviceAddresses by rememberSaveable {
         mutableStateOf<Set<String>>(
@@ -78,24 +78,33 @@ fun WidgetContent(
 
         Spacer(GlanceModifier.height(10.dp))
 
+        if (!bluetoothEnabled) {
+            Text(
+                text = "Bluetooth is turned off",
+                style = TextStyle().copy(
+                    fontSize = 12.sp,
+                )
+            )
+            Spacer(GlanceModifier.height(8.dp))
+        }
+
         Row(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalAlignment = Alignment.CenterVertically,
             modifier = GlanceModifier.fillMaxWidth().padding(5.dp)
         ) {
             Button(
-                if (isServiceBound) "Stop" else "Start",
+                text = if (isServiceBound) "Stop" else "Start",
                 onClick = {
-                    if (isServiceBound)
+                    if (isServiceBound) {
                         stopBluetoothService()
-                    else {
-//                        if (!bluetoothEnabled)
-//                            Toast.makeText(context, "Please turn on Bluetooth", Toast.LENGTH_LONG)
-//                                .show()
-//                        else
-                        startBluetoothService(selectedDeviceAddresses)
+                    } else {
+                        if (bluetoothEnabled) {
+                            startBluetoothService(selectedDeviceAddresses)
+                        }
                     }
-                }
+                },
+                enabled = bluetoothEnabled
             )
 
             Spacer(GlanceModifier.width(10.dp))
@@ -104,42 +113,90 @@ fun WidgetContent(
                 text = "Share",
                 onClick = {
                     scope.launch {
-                        val intent = Intent(context, ShareClipboardActivity::class.java).apply {
-                            action = "ACTION_SHARE"
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        try {
+                            val intent = Intent(context, ShareClipboardActivity::class.java).apply {
+                                action = "ACTION_SHARE"
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                        context.startActivity(intent)
                     }
                 },
-                enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty(),
+                enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty() && bluetoothEnabled,
             )
         }
 
         Spacer(GlanceModifier.height(10.dp))
 
-//        if (!bluetoothEnabled) {
-//            Text("Turn on Bluetooth to start sharing")
-//        } else
-        LazyColumn {
-            items(pairedDevices.toTypedArray()) { device ->
-                val name = if (ActivityCompat.checkSelfPermission(
-                        context, Manifest.permission.BLUETOOTH_CONNECT
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) "Unknown Device" else device.name ?: "Unknown Device"
-                val address = device.address
-                val isSelected = selectedDeviceAddresses.contains(address)
-
-                DeviceItem(
-                    onChecked = {
-                        selectedDeviceAddresses =
-                            if (!isSelected) {
-                                selectedDeviceAddresses + address
-                            } else selectedDeviceAddresses - address
-                    },
-                    checked = isSelected,
-                    name = name,
+        when {
+            !bluetoothEnabled -> {
+                Text(
+                    text = "Turn on Bluetooth to see paired devices",
+                    style = TextStyle().copy(fontSize = 12.sp)
                 )
             }
+
+            pairedDevices.isEmpty() -> {
+                Text(
+                    text = "No paired devices found",
+                    style = TextStyle().copy(fontSize = 12.sp)
+                )
+            }
+
+            else -> {
+                LazyColumn {
+                    items(pairedDevices.toTypedArray()) { device ->
+                        val name = if (ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.BLUETOOTH_CONNECT
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) "Unknown Device" else device.name ?: "Unknown Device"
+                        val address = device.address
+                        val isSelected = selectedDeviceAddresses.contains(address)
+
+                        DeviceItem(
+                            onChecked = {
+                                selectedDeviceAddresses =
+                                    if (!isSelected) {
+                                        selectedDeviceAddresses + address
+                                    } else selectedDeviceAddresses - address
+                            },
+                            checked = isSelected,
+                            name = name,
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun ErrorContent(message: String) {
+    Column(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "ClipSync Widget Error",
+            style = TextStyle().copy(
+                fontSize = 16.sp,
+                fontWeight = androidx.glance.text.FontWeight.Medium,
+            )
+        )
+
+        Spacer(GlanceModifier.height(8.dp))
+
+        Text(
+            text = message,
+            style = TextStyle().copy(
+                fontSize = 14.sp,
+            )
+        )
     }
 }
