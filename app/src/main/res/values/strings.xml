@@ -5,6 +5,10 @@
 
     <string name="buy_me_a_coffee">https://www.buymeacoffee.com/aubynsamuel</string>
     <string name="sourceCode">https://github.com/aubynsamuel/clipsync-android</string>
+
     <string name="widget_description">A widget to quickly share your clipboard.</string>
     <string name="loading_clip_sync">Loading ClipSync</string>
+    <string name="start">Start</string>
+    <string name="button">Button</string>
+    <string name="clip_sync">ClipSync</string>
 </resources>

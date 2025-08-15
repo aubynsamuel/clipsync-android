@@ -2,4 +2,27 @@
 <resources>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <!-- Light Palette -->
+    <color name="primary">#00796B</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#B2DFDB</color>
+    <color name="onPrimaryContainer">#004D40</color>
+
+    <color name="secondary">#F57C00</color>
+    <color name="onSecondary">#FFFFFF</color>
+    <color name="secondaryContainer">#FFE0B2</color>
+    <color name="onSecondaryContainer">#E65100</color>
+
+    <color name="tertiary">#5E35B1</color>
+    <color name="onTertiary">#FFFFFF</color>
+    <color name="tertiaryContainer">#EDE7F6</color>
+    <color name="onTertiaryContainer">#311B92</color>
+
+    <color name="background">#FAFAFA</color>
+    <color name="onBackground">#1C1B1F</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="onSurface">#1C1B1F</color>
+
+    <color name="error">#D32F2F</color>
+    <color name="onError">#FFFFFF</color>
 </resources>
