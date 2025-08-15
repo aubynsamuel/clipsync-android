@@ -75,6 +75,8 @@ dependencies {
     implementation(libs.androidx.glance.material3)
     // For interop APIs with Material 2
     implementation(libs.androidx.glance.material)
+    // Material
+    implementation(libs.material)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme -->
-    <style name="Theme.ClipSync" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.ClipSync" parent="Theme.Material3.Light">
         <item name="android:windowBackground">@color/black</item>
     </style>
 

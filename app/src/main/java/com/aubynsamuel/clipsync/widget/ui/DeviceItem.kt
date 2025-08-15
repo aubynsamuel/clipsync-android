@@ -23,7 +23,7 @@ fun DeviceItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-    CheckBox(checked = checked, onCheckedChange = { onChecked() })
+        CheckBox(checked = checked, onCheckedChange = { onChecked() })
 
         Column(
             modifier = GlanceModifier.padding(start = 5.dp),

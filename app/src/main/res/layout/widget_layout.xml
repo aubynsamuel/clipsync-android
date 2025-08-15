@@ -4,8 +4,8 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="#FCE4EC"
-        android:backgroundTint="#FCE4EC">
+        android:background="#ebddff"
+        android:backgroundTint="#ebddff">
 
     <TextView
             android:layout_width="wrap_content"

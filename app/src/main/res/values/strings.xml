@@ -11,4 +11,10 @@
     <string name="start">Start</string>
     <string name="button">Button</string>
     <string name="clip_sync">ClipSync</string>
+    <string name="share">Share</string>
+
+    <string name="samsung_galaxy_s24">Samsung S24</string>
+    <string name="desktop_grptu23o34">Desktop-GTU98</string>
+    <string name="pixel_8_pro">Pixel 8 Pro</string>
+    <string name="image_description">WidgetPreview Image\n</string>
 </resources>
