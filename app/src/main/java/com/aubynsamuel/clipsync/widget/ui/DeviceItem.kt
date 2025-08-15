@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync.widget
+package com.aubynsamuel.clipsync.widget.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
@@ -22,7 +22,8 @@ fun DeviceItem(
             .padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CheckBox(checked = checked, onCheckedChange = { onChecked() })
+
+    CheckBox(checked = checked, onCheckedChange = { onChecked() })
 
         Column(
             modifier = GlanceModifier.padding(start = 5.dp),

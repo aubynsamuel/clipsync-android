@@ -21,6 +21,8 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.provideContent
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
+import com.aubynsamuel.clipsync.widget.ui.ErrorContent
+import com.aubynsamuel.clipsync.widget.ui.WidgetContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

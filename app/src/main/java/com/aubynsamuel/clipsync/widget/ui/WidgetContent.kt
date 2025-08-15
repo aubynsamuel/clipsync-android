@@ -1,4 +1,4 @@
-package com.aubynsamuel.clipsync.widget
+package com.aubynsamuel.clipsync.widget.ui
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
@@ -30,6 +30,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.aubynsamuel.clipsync.activities.ShareClipboardActivity
@@ -72,7 +73,7 @@ fun WidgetContent(
         Text(
             text = "ClipSync", style = TextStyle().copy(
                 fontSize = 16.sp,
-                fontWeight = androidx.glance.text.FontWeight.Medium
+                fontWeight = FontWeight.Medium
             )
         )
 
@@ -169,34 +170,5 @@ fun WidgetContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ErrorContent(message: String) {
-    Column(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.errorContainer)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "ClipSync Widget Error",
-            style = TextStyle().copy(
-                fontSize = 16.sp,
-                fontWeight = androidx.glance.text.FontWeight.Medium,
-            )
-        )
-
-        Spacer(GlanceModifier.height(8.dp))
-
-        Text(
-            text = message,
-            style = TextStyle().copy(
-                fontSize = 14.sp,
-            )
-        )
     }
 }
