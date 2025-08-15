@@ -3,11 +3,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#FCE4EC"
+        android:backgroundTint="#FCE4EC">
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/loading_clip_sync" />
-
+            android:text="@string/loading_clip_sync"
+            android:textColor="#000000"
+            android:textSize="15sp" />
 </LinearLayout>
