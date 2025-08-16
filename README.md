@@ -30,6 +30,7 @@ Copy on one device, instantly paste on the other — *no internet needed*.
 - **Instant Clipboard Sharing**: Copy text on one device, paste on the other
 - **Background Operation**: Works silently in the background - no need to keep the app open
 - **Bluetooth-Based**: Uses secure Bluetooth RFCOMM protocol - no internet required
+- **Home Screen Widget**: Control ClipSync directly from your home screen - select devices, start the service, and share clipboard content without opening the app
 - **Auto-Copy**: Automatically copies received text to your clipboard - can be turned off
 - **Smart Notifications**: Get notified when new clipboard content arrives - when auto-copy is off
 - **Dark Mode Support**: Beautiful interface that adapts to your system theme
