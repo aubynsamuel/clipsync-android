@@ -98,9 +98,6 @@ class ClipSyncWidget : GlanceAppWidget() {
                 pairedDevices = emptySet()
             }
 
-            val settingsPrefs = SettingsPreferences(context)
-            autoCopyEnabled = settingsPrefs.getAutoCopy()
-
             provideContent {
                 MaterialTheme {
                     WidgetContent(
@@ -125,6 +122,11 @@ class ClipSyncWidget : GlanceAppWidget() {
                 }
             }
         }
+    }
+
+    private fun fetchAutoCopySetting(context: Context) {
+        val settingsPrefs = SettingsPreferences(context)
+        autoCopyEnabled = settingsPrefs.getAutoCopy()
     }
 
     private fun registerBluetoothReceiver(context: Context) {
@@ -184,6 +186,8 @@ class ClipSyncWidget : GlanceAppWidget() {
             if (bluetoothEnabled) {
                 loadPairedDevices(context)
             }
+
+            fetchAutoCopySetting(context)
 
             val serviceIntent = Intent(context, BluetoothService::class.java).apply {
                 putExtra("SELECTED_DEVICES", selectedDeviceAddresses.toTypedArray())
