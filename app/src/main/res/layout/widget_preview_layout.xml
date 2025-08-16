@@ -30,33 +30,29 @@
                 android:text="@string/start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:layout_marginEnd="5dp"
+                android:textSize="12sp"
+                android:textColor="@color/white"
                 android:textAlignment="center"
-                android:maxWidth="80.dp"
-                android:maxHeight="60.dp"
-                android:minWidth="10.dp"
-                android:minHeight="30.dp" />
+                android:backgroundTint="#356097"
+                android:maxHeight="70.dp"
+                android:minHeight="40.dp"
+                android:maxWidth="90.dp"
+                android:minWidth="40.dp" />
 
         <Button
+                android:text="@string/share"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/share"
-                android:textSize="10sp"
+                android:textSize="12sp"
+                android:textColor="@color/white"
                 android:textAlignment="center"
-                android:layout_marginStart="5dp"
-                android:maxWidth="80.dp"
-                android:maxHeight="60.dp"
-                android:minWidth="10.dp"
-                android:minHeight="30.dp" />
+                android:backgroundTint="#356097"
+                android:maxHeight="70.dp"
+                android:minHeight="40.dp"
+                android:maxWidth="90.dp"
+                android:minWidth="40.dp" />
     </LinearLayout>
 
-    <!--    <ImageView-->
-    <!--            android:layout_width="300dp"-->
-    <!--            android:layout_height="500dp"-->
-    <!--            android:src="@drawable/ic_widget_preview"-->
-    <!--            android:contentDescription="@string/image_description" />-->
-    <!-- Device List Preview -->
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
