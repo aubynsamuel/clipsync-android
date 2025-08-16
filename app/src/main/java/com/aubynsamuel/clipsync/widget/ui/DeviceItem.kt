@@ -3,6 +3,7 @@ package com.aubynsamuel.clipsync.widget.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.CheckBox
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
@@ -19,7 +20,7 @@ fun DeviceItem(
     Row(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp),
+            .padding(vertical = 2.dp).clickable { onChecked() },
         verticalAlignment = Alignment.CenterVertically
     ) {
 
