@@ -17,7 +17,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.glance.Button
+import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
+import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.background
@@ -33,10 +39,12 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import com.aubynsamuel.clipsync.activities.MainActivity
 import com.aubynsamuel.clipsync.activities.ShareClipboardActivity
 import com.aubynsamuel.clipsync.core.Essentials.isServiceBound
 import com.aubynsamuel.clipsync.core.Essentials.selectedDeviceAddresses
 import com.aubynsamuel.clipsync.core.Essentials.updateSelectedDevices
+import com.aubynsamuel.clipsync.widget.ClipSyncWidget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -46,7 +54,8 @@ fun WidgetContent(
     pairedDevices: Set<BluetoothDevice>,
     stopBluetoothService: () -> Unit,
     startBluetoothService: (Set<String>) -> Unit,
-    bluetoothEnabled: Boolean
+    bluetoothEnabled: Boolean,
+    id: GlanceId
 ) {
     var selectedDeviceAddresses by rememberSaveable {
         mutableStateOf<Set<String>>(
@@ -74,7 +83,8 @@ fun WidgetContent(
             text = "ClipSync", style = TextStyle().copy(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
-            )
+            ),
+            modifier = GlanceModifier.clickable(onClick = actionStartActivity<MainActivity>())
         )
 
         Spacer(GlanceModifier.height(10.dp))
@@ -97,35 +107,26 @@ fun WidgetContent(
             Button(
                 text = if (isServiceBound) "Stop" else "Start",
                 onClick = {
-                    if (isServiceBound) {
-                        stopBluetoothService()
-                    } else {
-                        if (bluetoothEnabled) {
-                            startBluetoothService(selectedDeviceAddresses)
+                    scope.launch {
+                        if (isServiceBound) {
+                            stopBluetoothService()
+                        } else {
+                            if (bluetoothEnabled) {
+                                startBluetoothService(selectedDeviceAddresses)
+                            }
                         }
+                        ClipSyncWidget().update(context, id)
                     }
                 },
-                enabled = bluetoothEnabled
+//                enabled = bluetoothEnabled
             )
 
             Spacer(GlanceModifier.width(10.dp))
 
             Button(
                 text = "Share",
-                onClick = {
-                    scope.launch {
-                        try {
-                            val intent = Intent(context, ShareClipboardActivity::class.java).apply {
-                                action = "ACTION_SHARE"
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                },
-                enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty() && bluetoothEnabled,
+                onClick = actionRunCallback<ShareClipboard>(),
+//                enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty() && bluetoothEnabled,
             )
         }
 
@@ -158,10 +159,13 @@ fun WidgetContent(
 
                         DeviceItem(
                             onChecked = {
-                                selectedDeviceAddresses =
-                                    if (!isSelected) {
-                                        selectedDeviceAddresses + address
-                                    } else selectedDeviceAddresses - address
+                                scope.launch {
+                                    selectedDeviceAddresses =
+                                        if (!isSelected) {
+                                            selectedDeviceAddresses + address
+                                        } else selectedDeviceAddresses - address
+                                    ClipSyncWidget().update(context, id)
+                                }
                             },
                             checked = isSelected,
                             name = name,
@@ -169,6 +173,26 @@ fun WidgetContent(
                     }
                 }
             }
+        }
+    }
+}
+
+
+class ShareClipboard() : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        try {
+            val intent = Intent(context, ShareClipboardActivity::class.java).apply {
+                action = "ACTION_SHARE"
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            ClipSyncWidget().update(context, glanceId)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

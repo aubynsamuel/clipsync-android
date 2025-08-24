@@ -110,7 +110,8 @@ class ClipSyncWidget : GlanceAppWidget() {
                             )
                         },
                         bluetoothEnabled = bluetoothEnabled,
-                        context = context
+                        context = context,
+                        id = id
                     )
                 }
             }
