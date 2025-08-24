@@ -118,7 +118,6 @@ fun WidgetContent(
                         ClipSyncWidget().update(context, id)
                     }
                 },
-//                enabled = bluetoothEnabled
             )
 
             Spacer(GlanceModifier.width(10.dp))
@@ -126,7 +125,7 @@ fun WidgetContent(
             Button(
                 text = "Share",
                 onClick = actionRunCallback<ShareClipboard>(),
-//                enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty() && bluetoothEnabled,
+                // enabled = isServiceBound && selectedDeviceAddresses.isNotEmpty() && bluetoothEnabled,
             )
         }
 
