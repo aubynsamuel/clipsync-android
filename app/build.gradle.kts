@@ -15,8 +15,8 @@ android {
         applicationId = "com.aubynsamuel.clipsync"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.3.0-alpha"
+        versionCode = 5
+        versionName = "1.3.0-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -27,7 +27,7 @@ android {
 
     buildTypes {
         release {
-            val boolean = false
+            val boolean = true
             isMinifyEnabled = boolean
             isShrinkResources = boolean
             proguardFiles(
