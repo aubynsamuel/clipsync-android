@@ -63,8 +63,6 @@ dependencies {
 
     // Work manager
     implementation(libs.androidx.work.runtime.ktx)
-    // Status Bar
-    implementation(libs.accompanist.systemuicontroller)
     // Material Icons
     implementation(libs.androidx.material.icons.extended)
     // Navigation Compose

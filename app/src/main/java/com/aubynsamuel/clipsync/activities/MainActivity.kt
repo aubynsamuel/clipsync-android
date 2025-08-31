@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aubynsamuel.clipsync.bluetooth.BluetoothService
@@ -50,11 +51,12 @@ class MainActivity : ComponentActivity() {
             val settingsPrefs = SettingsPreferences(this)
             val settingsViewModel = viewModel { SettingsViewModel(settingsPrefs) }
             autoCopyEnabled = settingsViewModel.autoCopy.collectAsStateWithLifecycle().value
+            val darkTheme = settingsViewModel.isDarkMode.collectAsStateWithLifecycle().value
+            // Set status bar icons color to match app theme
+            WindowCompat.getInsetsController(window, window.decorView)
+                .isAppearanceLightStatusBars = !darkTheme
 
-            ClipSyncTheme(
-                darkTheme =
-                    settingsViewModel.isDarkMode.collectAsStateWithLifecycle().value
-            ) {
+            ClipSyncTheme(darkTheme = darkTheme) {
                 Navigation(
                     startBluetoothService = { selectedDeviceAddresses ->
                         startBluetoothService(selectedDeviceAddresses)

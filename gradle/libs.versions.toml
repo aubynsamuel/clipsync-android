@@ -12,7 +12,6 @@ uiautomator = "2.3.0"
 benchmarkMacroJunit4 = "1.4.0"
 baselineprofile = "1.4.0"
 profileinstaller = "1.4.1"
-accompanistSystemuicontroller = "0.36.0"
 robolectric = "4.15.1"
 mockito-core = "5.19.0"
 mockito-kotlin = "6.0.0"
@@ -22,14 +21,13 @@ uiTestJunit4Android = "1.9.0"
 compose-ui = "1.9.0"
 workVersion = "2.10.3"
 navigationCompose = "2.9.3"
-material3 = "1.5.0-alpha02"
+material3 = "1.5.0-alpha03"
 glanceAppwidget = "1.1.1"
 material = "1.12.0"
 
 
 [libraries]
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workVersion" }
 androidx-work-testing = { module = "androidx.work:work-testing", version.ref = "workVersion" }

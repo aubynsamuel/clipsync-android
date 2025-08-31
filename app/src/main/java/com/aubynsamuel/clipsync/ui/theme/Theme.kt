@@ -7,7 +7,6 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import com.aubynsamuel.clipsync.ui.component.StatusBarColor
 
 private val DarkColorScheme = darkColorScheme(
     primary = md_dark_primary,
@@ -68,8 +67,6 @@ fun ClipSyncTheme(
 ) {
     val colorScheme =
         if (darkTheme) DarkColorScheme else LightColorScheme
-
-    StatusBarColor(!darkTheme)
 
     MaterialExpressiveTheme(
         colorScheme = colorScheme,
