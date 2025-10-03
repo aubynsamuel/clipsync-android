@@ -42,6 +42,7 @@ import com.aubynsamuel.clipsync.core.Essentials.toggleAutoCopy
 import com.aubynsamuel.clipsync.ui.component.AppInfoCard
 import com.aubynsamuel.clipsync.ui.component.SettingItem
 import com.aubynsamuel.clipsync.ui.component.WindowsCompanionCard
+import com.aubynsamuel.clipsync.ui.navigation.safePopBackStack
 import com.aubynsamuel.clipsync.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.delay
 
@@ -91,7 +92,7 @@ fun SettingsScreen(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back Button",
                         modifier = Modifier
-                            .clickable(onClick = { navController.popBackStack() })
+                            .clickable(onClick = { navController.safePopBackStack() })
                             .padding(horizontal = 8.dp)
                             .size(25.dp),
                         tint = colorScheme.onPrimaryContainer,
