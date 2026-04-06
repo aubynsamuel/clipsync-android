@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -14,6 +15,12 @@ android {
     namespace = "com.aubynsamuel.clipsync"
     compileSdk = 36
 
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
+    }
+
     defaultConfig {
         applicationId = "com.aubynsamuel.clipsync"
         minSdk = 24
@@ -28,11 +35,21 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(localProperties["STORE_FILE"] as String)
+            storePassword = localProperties["STORE_PASSWORD"] as String
+            keyAlias = localProperties["KEY_ALIAS"] as String
+            keyPassword = localProperties["KEY_PASSWORD"] as String
+        }
+    }
+
     buildTypes {
         release {
             val boolean = true
             isMinifyEnabled = boolean
             isShrinkResources = boolean
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

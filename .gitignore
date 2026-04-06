@@ -16,5 +16,5 @@
 .cxx
 local.properties
 keystore_base64.txt
-release-key.jks
+app/release-key.jks
 app/benchmarkRelease
