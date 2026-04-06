@@ -70,7 +70,7 @@ class NotificationReceiverTest {
         val nextStoppedService = shadowApplication.nextStoppedService
         assertEquals(BluetoothService::class.java.name, nextStoppedService.component?.className)
 
-        // Verify notification was cancelled
+        // Verify notification was canceled
         verify(mockNotificationManager).cancel(1001)
     }
 
@@ -103,7 +103,7 @@ class NotificationReceiverTest {
         val latestToast = ShadowToast.getLatestToast()
         assertEquals("Copied to clipboard", ShadowToast.getTextOfLatestToast())
 
-        // Verify notification was cancelled with correct ID
+        // Verify notification was canceled with correct ID
         verify(mockNotificationManager).cancel(testNotificationId)
     }
 
@@ -132,7 +132,7 @@ class NotificationReceiverTest {
         // Verify toast was NOT shown (on Android 13+)
         assertNull("No toast should be shown on Android 13+", ShadowToast.getLatestToast())
 
-        // Verify notification was still cancelled
+        // Verify notification was still canceled
         verify(mockNotificationManager).cancel(testNotificationId)
     }
 
@@ -196,7 +196,7 @@ class NotificationReceiverTest {
         verify(mockClipboardManager).setPrimaryClip(any())
         assertEquals("Copied to clipboard", ShadowToast.getTextOfLatestToast())
 
-        // Verify notification was NOT cancelled since ID was 0
+        // Verify notification was NOT canceled since ID was 0
         verify(mockNotificationManager, never()).cancel(any<Int>())
     }
 
@@ -278,7 +278,7 @@ class NotificationReceiverTest {
         notificationReceiver.onReceive(context, intent)
 
         // Assert
-        // Verify only notification 1001 was cancelled, not any other ID
+        // Verify only notification 1001 was canceled, not any other ID
         verify(mockNotificationManager, times(1)).cancel(1001)
         verify(mockNotificationManager, never()).cancel(0)
         verify(mockNotificationManager, never()).cancel(999)

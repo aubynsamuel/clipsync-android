@@ -102,7 +102,7 @@ class BluetoothServiceTest {
         service = controller.create().get()
 
         TestScope().launch {
-            Essentials.clean()
+            Essentials.clear()
         }
     }
 
@@ -110,7 +110,7 @@ class BluetoothServiceTest {
     fun tearDown() {
         controller.destroy()
         TestScope().launch {
-            Essentials.clean()
+            Essentials.clear()
         }
     }
 
@@ -124,7 +124,7 @@ class BluetoothServiceTest {
 
     @Test
     fun `shareClipboard returns NO_SELECTED_DEVICES when addresses are empty`() = runTest {
-        service.updateSelectedDevices(arrayOf())
+        Essentials.updateSelectedDevices(setOf())
 
         val result = service.shareClipboard("test")
         Assert.assertEquals(SharingResult.NO_SELECTED_DEVICES, result)
@@ -135,7 +135,7 @@ class BluetoothServiceTest {
         val shadowApplication = ShadowApplication()
         shadowApplication.denyPermissions(Manifest.permission.BLUETOOTH_CONNECT)
 
-        service.updateSelectedDevices(arrayOf(testDeviceAddress))
+        Essentials.updateSelectedDevices(setOf(testDeviceAddress))
 
         val result = service.shareClipboard("test clipboard")
         Assert.assertEquals(SharingResult.PERMISSION_NOT_GRANTED, result)
@@ -147,7 +147,7 @@ class BluetoothServiceTest {
         `when`(remoteDevice.createRfcommSocketToServiceRecord(testUuid)).thenReturn(clientSocket)
         `when`(clientSocket.outputStream).thenReturn(outputStream)
 
-        service.updateSelectedDevices(arrayOf(testDeviceAddress))
+        Essentials.updateSelectedDevices(setOf(testDeviceAddress))
 
         val result = service.shareClipboard("hello")
 
@@ -166,7 +166,7 @@ class BluetoothServiceTest {
         `when`(remoteDevice.createRfcommSocketToServiceRecord(testUuid)).thenReturn(clientSocket)
         `when`(clientSocket.connect()).thenThrow(IOException("Connection failed!"))
 
-        service.updateSelectedDevices(arrayOf(testDeviceAddress))
+        Essentials.updateSelectedDevices(setOf(testDeviceAddress))
 
         val result = service.shareClipboard("test")
         Assert.assertEquals(SharingResult.SENDING_ERROR, result)
@@ -193,7 +193,7 @@ class BluetoothServiceTest {
     fun `updateSelectedDevices updates addresses correctly`() = runTest {
         val testAddresses = arrayOf("11:22:33:44:55:66", "AA:BB:CC:DD:EE:FF")
 
-        service.updateSelectedDevices(testAddresses)
+        Essentials.updateSelectedDevices(testAddresses.toSet())
 
         val mockDevice1 = mock<BluetoothDevice>()
         val mockDevice2 = mock<BluetoothDevice>()
@@ -215,26 +215,13 @@ class BluetoothServiceTest {
 
     @Test
     fun `service sets isServiceBound flag in onCreate`() = runTest {
-        Essentials.clean()
+        Essentials.clear()
         delay(1000)
 
         val newController = Robolectric.buildService(BluetoothService::class.java)
         newController.create()
 
-        Assert.assertEquals(true, Essentials.isServiceBound)
-
-        newController.destroy()
-    }
-
-    @Test
-    fun `service sets bluetoothService in Essentials object in onCreate`() = runTest {
-        Essentials.clean()
-        delay(1000)
-
-        val newController = Robolectric.buildService(BluetoothService::class.java)
-        val newService = newController.create().get()
-
-        Assert.assertEquals(newService, Essentials.bluetoothService)
+        Assert.assertEquals(true, Essentials.isServiceRunning.value)
 
         newController.destroy()
     }
@@ -243,13 +230,6 @@ class BluetoothServiceTest {
     fun `service clears isServiceBound flag in onDestroy`() = runTest {
         controller.destroy()
         delay(1000)
-        Assert.assertEquals(false, Essentials.isServiceBound)
-    }
-
-    @Test
-    fun `service clears bluetoothService in Essentials object in onDestroy`() = runTest {
-        controller.destroy()
-        delay(1000)
-        Assert.assertEquals(null, Essentials.bluetoothService)
+        Assert.assertEquals(false, Essentials.isServiceRunning.value)
     }
 }

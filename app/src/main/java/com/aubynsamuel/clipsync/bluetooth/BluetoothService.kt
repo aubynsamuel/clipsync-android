@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
@@ -177,10 +178,16 @@ class BluetoothService : Service() {
                 put("timestamp", System.currentTimeMillis().toString())
             }
 
-            outputStream.write((json.toString() + "\n").toByteArray())
+            withContext(Dispatchers.IO) {
+                outputStream.write((json.toString() + "\n").toByteArray())
+            }
             delay(1000)
-            outputStream.flush()
-            outputStream.close()
+            withContext(Dispatchers.IO) {
+                outputStream.flush()
+            }
+            withContext(Dispatchers.IO) {
+                outputStream.close()
+            }
             socket.close()
 
             return SharingResult.SUCCESS

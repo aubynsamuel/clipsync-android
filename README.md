@@ -1,4 +1,3 @@
-
 <div align="center">
 
 <img src="app/src/main/res/AppIcon.png" alt="ClipSync Logo" width="100">
@@ -21,16 +20,15 @@ Copy on one device, instantly paste on the other — *no internet needed*.
   <!-- <img src="./demo/ClipSync_settings.webp" width="300" alt="Settings Screen"> -->
 </div>
 
-
 <img src="./demo/ClipSync.gif" width="1000" alt="ClipSync Demo">
-
 
 ### ✨ Key Features
 
 - **Instant Clipboard Sharing**: Copy text on one device, paste on the other
 - **Background Operation**: Works silently in the background - no need to keep the app open
 - **Bluetooth-Based**: Uses secure Bluetooth RFCOMM protocol - no internet required
-- **Home Screen Widget**: Control ClipSync directly from your home screen - select devices, start the service, and share clipboard content without opening the app
+- **Home Screen Widget**: Control ClipSync directly from your home screen - select devices, start
+  the service, and share clipboard content without opening the app
 - **Auto-Copy**: Automatically copies received text to your clipboard - can be turned off
 - **Smart Notifications**: Get notified when new clipboard content arrives - when auto-copy is off
 - **Dark Mode Support**: Beautiful interface that adapts to your system theme
@@ -95,7 +93,8 @@ Follow the instructions in the Windows app README to set up and pair with your A
 1. Open ClipSync
 2. Select the devices you want to share with
 3. Tap "Start" to start the service
-4. The service will run in the background displaying a notification with 2 actions (Share and Dismiss)
+4. The service will run in the background displaying a notification with 2 actions (Share and
+   Dismiss)
 
 #### Sharing Clipboard Content
 
@@ -103,6 +102,7 @@ Follow the instructions in the Windows app README to set up and pair with your A
 2. Pull down the notifications and press the share action button
 
 #### Receiving
+
 - If Auto-Copy is enabled, it will be instantly available in the clipboard
 - If Auto-Copy is disabled, you'll get a notification to manually copy
 
@@ -174,7 +174,8 @@ ClipSync is designed with privacy in mind:
 
 ## 🤝 Contributing
 
-We welcome contributions! Whether it's bug reports, feature requests, or code contributions, every bit helps make ClipSync better.
+We welcome contributions! Whether it's bug reports, feature requests, or code contributions, every
+bit helps make ClipSync better.
 
 ### How to Contribute
 
